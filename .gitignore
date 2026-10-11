@@ -6,3 +6,4 @@ Thumbs.db
 *.log
 # Local review file made by scripts/seed/seed.mjs
 design-checklist.html
+review/
