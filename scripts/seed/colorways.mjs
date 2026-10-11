@@ -54,22 +54,27 @@ const sets = {
       ['Orange & magenta', 'Nexa Rust worn/orange magenta.png', 172612758, '79535341-fascism-sucks-magenta-orange'],
       ['Pink', 'Nexa Rust worn/pink.png', 172612942, '79539904-fascism-sucks-pink'],
       ['Purple', 'Nexa Rust worn/purple.png', 172613011, '79540013-fascism-sucks-purple'],
-      ['Starburst: red, white & blue', 'Fascism sucks red white blue.png', 172587587],
-      ['Starburst: green & blue', 'Fascism sucks green blue.png', 172586546, '79555548-fascism-sucks-flower-bluegreens'],
-      ['Starburst: green & fuchsia', 'Fascism sucks green fuchsia.png', 172586668, '79562591-fascism-sucks-flower-fuchsia-green-blue'],
-      ['Starburst: green & grape', 'Fascism sucks green grape.png', 172587465, '79563445-fascism-sucks-flower-grape-blue-green'],
-      ['Starburst: green & magenta', 'Fascism sucks green magenta.png', 172587494, '79563505-fascism-sucks-flower-magenta-blue-green'],
-      ['Starburst: green & orange', 'Fascism sucks green orange.png', 172587520, '79563597-fascism-sucks-flower-orange-blue-greens'],
-      ['Starburst: green & pink', 'Fascism sucks green pink.png', 172587538, '79563785-fascism-sucks-flower-pink-blue-greens'],
-      ['Starburst: green & purple', 'Fascism sucks green purple.png', 172587557, '79563703-fascism-sucks-flower-purple-blue-greens'],
-      ['Starburst: yellow & blue', 'Fascism sucks yellow blue.png', 172587620, '79563919-fascism-sucks-flower-yellow-orange-blue'],
-      ['Starburst: yellow & fuchsia', 'Fascism sucks yellow fuschia.png', 172587643],
-      ['Starburst: yellow & grape', 'Fascism sucks yellow grape.png', 172587672, '79615478-fascism-sucks-flower-yellow-orange-grape'],
-      ['Starburst: yellow & green', 'Fascism sucks yellow green.png', 172587690, '79615634-fascism-sucks-flower-yellow-orange-green'],
-      ['Starburst: yellow & magenta', 'Fascism sucks yellow magentaa.png', 172587703, '79631953-fascism-sucks-flower-yellow-orange-magenta'],
-      ['Starburst: yellow & orange', 'Fascism sucks yellow orange.png', 172587729, '79631777-fascism-sucks-flower-yellow-orange'],
-      ['Starburst: yellow & pink', 'Fascism sucks yellow pink.png', 172587771, '79632439-fascism-sucks-flower-yellow-orange-pink'],
-      ['Starburst: yellow & purple', 'Fascism Sucks Yellow and purple.png', 172587602, '79563817-fascism-sucks-flower-yellow-orange-purple'],
+    ],
+  },
+  'fascism-sucks-starburst': {
+    folder: 'Tshirts/Fascism Sucks',
+    colors: [
+      ['Red, white & blue', 'Fascism sucks red white blue.png', 172587587],
+      ['Green & blue', 'Fascism sucks green blue.png', 172586546, '79555548-fascism-sucks-flower-bluegreens'],
+      ['Green & fuchsia', 'Fascism sucks green fuchsia.png', 172586668, '79562591-fascism-sucks-flower-fuchsia-green-blue'],
+      ['Green & grape', 'Fascism sucks green grape.png', 172587465, '79563445-fascism-sucks-flower-grape-blue-green'],
+      ['Green & magenta', 'Fascism sucks green magenta.png', 172587494, '79563505-fascism-sucks-flower-magenta-blue-green'],
+      ['Green & orange', 'Fascism sucks green orange.png', 172587520, '79563597-fascism-sucks-flower-orange-blue-greens'],
+      ['Green & pink', 'Fascism sucks green pink.png', 172587538, '79563785-fascism-sucks-flower-pink-blue-greens'],
+      ['Green & purple', 'Fascism sucks green purple.png', 172587557, '79563703-fascism-sucks-flower-purple-blue-greens'],
+      ['Yellow & blue', 'Fascism sucks yellow blue.png', 172587620, '79563919-fascism-sucks-flower-yellow-orange-blue'],
+      ['Yellow & fuchsia', 'Fascism sucks yellow fuschia.png', 172587643],
+      ['Yellow & grape', 'Fascism sucks yellow grape.png', 172587672, '79615478-fascism-sucks-flower-yellow-orange-grape'],
+      ['Yellow & green', 'Fascism sucks yellow green.png', 172587690, '79615634-fascism-sucks-flower-yellow-orange-green'],
+      ['Yellow & magenta', 'Fascism sucks yellow magentaa.png', 172587703, '79631953-fascism-sucks-flower-yellow-orange-magenta'],
+      ['Yellow & orange', 'Fascism sucks yellow orange.png', 172587729, '79631777-fascism-sucks-flower-yellow-orange'],
+      ['Yellow & pink', 'Fascism sucks yellow pink.png', 172587771, '79632439-fascism-sucks-flower-yellow-orange-pink'],
+      ['Yellow & purple', 'Fascism Sucks Yellow and purple.png', 172587602, '79563817-fascism-sucks-flower-yellow-orange-purple'],
     ],
   },
   'fight-oligarchy': {
@@ -135,7 +140,7 @@ for (const [design, { folder, colors }] of Object.entries(sets)) {
     if (!existsSync(src)) throw new Error(`Missing ${src}`);
     let image = mainImage;
     if (i > 0) {
-      const outName = `${design}-${slug(name.replace(/^starburst:\s*/i, 'starburst '))}.png`;
+      const outName = `${design}-${slug(name)}.png`;
       await sharp(src, { limitInputPixels: false })
         .trim({ threshold: 1 })
         .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
