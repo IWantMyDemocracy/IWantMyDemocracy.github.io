@@ -22,9 +22,17 @@ const pageUrl = new URL(`/designs/${design.id}`, Astro.site).toString();
 // that store doesn't sell.
 const hasColors = design.colorways.length > 1;
 const colorSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+// White artwork is shown on navy (as the stores do) so it doesn't disappear on the light background.
+const onDark = (name: string) => /^white$/i.test(name.trim());
 const views = hasColors
-  ? design.colorways.map((c) => ({ name: c.name, slug: colorSlug(c.name), image: c.image, links: storeLinks(design, c) }))
-  : [{ name: '', slug: '', image: design.image, links: storeLinks(design) }];
+  ? design.colorways.map((c) => ({
+      name: c.name,
+      slug: colorSlug(c.name),
+      image: c.image,
+      dark: onDark(c.name),
+      links: storeLinks(design, c),
+    }))
+  : [{ name: '', slug: '', image: design.image, dark: false, links: storeLinks(design) }];
 const links = views[0].links;
 const sells = {
   teepublic: views.some((v) => v.links.teepublic),
@@ -59,7 +67,7 @@ const description =
       <div class="design-image">
         {
           views.map((v, i) => (
-            <div class="design-view" data-color-view={i} hidden={i > 0}>
+            <div class:list={['design-view', { 'on-dark': v.dark }]} data-color-view={i} hidden={i > 0}>
               <Picture
                 src={v.image}
                 alt={v.name ? `${design.title}, ${v.name}` : design.title}
@@ -107,7 +115,7 @@ const description =
                 {views.map((v, i) => (
                   <button
                     type="button"
-                    class="swatch"
+                    class:list={['swatch', { 'on-dark': v.dark }]}
                     role="radio"
                     aria-checked={i === 0 ? 'true' : 'false'}
                     aria-label={v.name}
@@ -277,6 +285,16 @@ const description =
   }
   .design-view[hidden] {
     display: none;
+  }
+  .design-view.on-dark {
+    position: absolute;
+    inset: 0;
+    background: var(--navy);
+    border-radius: calc(var(--radius) * 1.4 - 6px);
+  }
+  .swatch.on-dark,
+  .swatch.on-dark[aria-checked='true'] {
+    background: var(--navy);
   }
   .design-image :global(img) {
     position: absolute;

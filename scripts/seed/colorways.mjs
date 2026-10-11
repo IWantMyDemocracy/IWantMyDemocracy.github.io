@@ -116,6 +116,20 @@ const sets = {
       ['Yellow', 'yellow.png', 173052216],
     ],
   },
+  'workers-over-billionaires-script': {
+    folder: 'Tshirts/Workers over Billionaires/Epicursive Script',
+    colors: [
+      ['Light blue', 'Workers over billionaires lt blue with grey stroke 1px.png', 173029460, '79350012-workers-over-billionaires-blue'],
+      ['Black', 'Workers over billionaires black with grey stroke 1px.png', 173028918, '79350018-workers-over-billionaires-black'],
+      ['Green', 'Workers over billionaires lt green with grey stroke 1px.png', 173029509, '79350013-workers-over-billionaires-green'],
+      ['Orange', 'Workers over billionaires orange with grey stroke 1px.png', 173029532, '79350020-workers-over-billionaires-orange'],
+      ['Pink', 'Workers over billionaires pink with grey stroke 1px.png', 173029560, '79350019-workers-over-billionaires-pink'],
+      ['Purple', 'Workers over billionaires purple with grey stroke 1px.png', 173029590, '79350016-workers-over-billionaires-purple'],
+      ['Teal', 'Workers over billionaires green with grey stroke 1px.png', 173029364, '79350017-workers-over-billionaires-green'],
+      ['White', 'Workers over billionaires white with grey stroke 1px.png', 173029822, '79350014-workers-over-billionaires-white'],
+      ['Yellow', 'Workers over billionaires yellow with grey stroke 1px.png', 173029627, '79350015-workers-over-billionaires-yellow'],
+    ],
+  },
   'workers-over-billionaires-pow': {
     folder: 'Tshirts/Workers over Billionaires/EDs Market',
     colors: [
