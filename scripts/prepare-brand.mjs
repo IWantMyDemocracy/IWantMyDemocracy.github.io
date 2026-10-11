@@ -19,11 +19,11 @@ sharp.cache(false);
 sharp.concurrency(1);
 
 /**
- * Marks every pixel that can't be reached from the image border without crossing the shape
- * (the inside of letters like D, o and the loops of c) as solid, so those spaces show white
- * instead of whatever colour is behind the logo.
+ * Returns a mask of the see-through spaces enclosed by the shape (the inside of the D, the
+ * hooks of the c's, the space above the y's swash): pixels that can't be reached from the
+ * image border without crossing the shape.
  */
-function fillEnclosed(mask, w, h) {
+function enclosedMask(mask, w, h) {
   const outside = new Uint8Array(w * h);
   const stack = [];
   const visit = (i) => {
@@ -42,18 +42,18 @@ function fillEnclosed(mask, w, h) {
     if (i >= w) visit(i - w);
     if (i < w * (h - 1)) visit(i + w);
   }
-  let filled = 0;
-  for (let i = 0; i < mask.length; i++) {
-    if (!outside[i] && mask[i] < 255) {
-      mask[i] = 255;
-      filled++;
-    }
+  const enclosed = Buffer.alloc(w * h);
+  for (let i = 0; i < enclosed.length; i++) {
+    if (!outside[i] && mask[i] < 255) enclosed[i] = 255;
   }
-  return filled;
+  return enclosed;
 }
 
-/** Adds a solid white outline around everything that isn't transparent. */
-async function withWhiteEdge(input, radius, { fillHoles = false } = {}) {
+/**
+ * Adds a solid white outline around everything that isn't transparent. With `holeColor`, the
+ * enclosed see-through spaces get that colour, so they look the same on any background.
+ */
+async function withWhiteEdge(input, radius, { holeColor } = {}) {
   const { width, height } = await sharp(input).metadata();
   const pad = radius * 2;
   const padded = await sharp(input)
@@ -72,19 +72,24 @@ async function withWhiteEdge(input, radius, { fillHoles = false } = {}) {
     const v = blurred[i];
     grown[i] = v >= 24 ? 255 : v <= 8 ? 0 : Math.round(((v - 8) / 16) * 255);
   }
-  if (fillHoles) console.log(`  filled ${fillEnclosed(grown, w, h)} enclosed pixels`);
-  const white = await sharp({ create: { width: w, height: h, channels: 3, background: '#ffffff' } })
-    .joinChannel(grown, { raw: { width: w, height: h, channels: 1 } })
-    .png()
-    .toBuffer();
+  const layer = (color, alpha) =>
+    sharp({ create: { width: w, height: h, channels: 3, background: color } })
+      .joinChannel(alpha, { raw: { width: w, height: h, channels: 1 } })
+      .png()
+      .toBuffer();
 
-  return sharp(white).composite([{ input: padded }]).png();
+  const white = await layer('#ffffff', grown);
+  if (!holeColor) return sharp(white).composite([{ input: padded }]).png();
+
+  const holes = await layer(holeColor, enclosedMask(grown, w, h));
+  return sharp(holes).composite([{ input: white }, { input: padded }]).png();
 }
 
 // ---- Logo -------------------------------------------------------------
 const logo = await sharp(logoPath).trim().resize({ width: 2400 }).png().toBuffer();
 await sharp(logo).png({ compressionLevel: 9 }).toFile(new URL('logo.png', out).pathname.slice(1));
-await (await withWhiteEdge(logo, 18, { fillHoles: true })).toFile(new URL('logo-on-blue.png', out).pathname.slice(1));
+// Medium blue for the enclosed spaces: lighter than the dark page background, darker than the letters.
+await (await withWhiteEdge(logo, 18, { holeColor: '#3b6ef0' })).toFile(new URL('logo-on-blue.png', out).pathname.slice(1));
 console.log('logo.png, logo-on-blue.png');
 
 // ---- Donkey -----------------------------------------------------------
