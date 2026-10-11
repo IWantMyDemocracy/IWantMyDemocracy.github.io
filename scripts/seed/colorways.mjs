@@ -13,12 +13,18 @@ const SOURCE_ROOT = process.env.FAUBER_DESIGN_DIR ?? '';
 if (!SOURCE_ROOT) throw new Error('Set FAUBER_DESIGN_DIR to the Fauber Design folder first.');
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const rb = (id) => (id ? `https://www.redbubble.com/shop/ap/${id}` : '');
-const tp = (idSlug) => (idSlug ? `https://www.teepublic.com/t-shirt/${idSlug}` : '');
+const isUrl = (v) => typeof v === 'string' && v.startsWith('http');
+const rb = (id) => (isUrl(id) ? id : id ? `https://www.redbubble.com/shop/ap/${id}` : '');
+const tp = (idSlug) => (isUrl(idSlug) ? idSlug : idSlug ? `https://www.teepublic.com/t-shirt/${idSlug}` : '');
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-// [colour name, artwork file (relative to the folder), Redbubble work id, TeePublic id-slug]
-// The first colour is the design's main picture.
+// Colours that aren't listed in a store yet point to the WOKE collection / album instead.
+const RB_WOKE = 'https://www.redbubble.com/people/fauberdesign/shop?asc=u&collections=4254682';
+const TP_WOKE = 'https://www.teepublic.com/user/i-want-my-democracy/albums/459059-woke';
+
+// [colour name, artwork file (relative to the folder), Redbubble work id or URL, TeePublic id-slug or URL]
+// The first colour is the design's main picture. A design with a single entry only gets its
+// picture copied (no colour list).
 const sets = {
   'fight-fascism': {
     folder: 'Tshirts/Fight Fascism',
@@ -124,7 +130,75 @@ const sets = {
       ['Yellow & purple', 'Pow workers lime green yellow purple.png', 173028304, '79398391-purple-yellow-workers-over-billionaires-lime-green'],
     ],
   },
+  'vote-democracy-is-people-powered': {
+    folder: 'Tshirts/Vote deomcracy is people powered',
+    colors: [
+      ['White letters', 'Vote Democracy is people powered WH dk trim 3 pt.png', 164419003, '64604241-vote-democracy-is-people-powered'],
+      ['Black letters', 'Vote Democracy is people powered DK wh trim 3 pt.png', 164418038, '64603732-vote-democracy-is-people-powered'],
+    ],
+  },
+  // WOKE aka Caring About Others: one design per font.
+  'woke-caring-about-others': {
+    folder: 'Tshirts/WOKE Caring about others/Modesto Expanded',
+    colors: [
+      ['Light blue & dark blue', 'Blue Base glow under frame woke caring about others light blue dk blue trim.png', RB_WOKE, '74440638-woke-is-caring-about-others-light-blue'],
+      ['Navy & green', 'Blue Base glow under frame woke caring about others light blue final.png', 170066550, '74420250-woke-aka-caring-about-others'],
+    ],
+  },
+  'woke-caring-about-others-serif': {
+    folder: 'Tshirts/WOKE Caring about others/Amster',
+    colors: [
+      ['Light blue & dark blue', 'Blue Base glow under frame woke caring about others light blue dk blue trim.png', 170066767, '74416587-woke-aka-caring-about-others-carolina-blue'],
+      ['Navy & green', 'Blue Base glow under frame woke caring about others light blue final.png', RB_WOKE, TP_WOKE],
+    ],
+  },
+  'woke-caring-about-others-comic': {
+    folder: 'Tshirts',
+    colors: [
+      ['Green & white', 'WOKE Caring about others/Blambot Pro BB Regular/WOKE caring about others Blambot green white trim.png', 170067109, '74394495-woke-aka-caring-about-others-brat-white-trim'],
+      ['Navy & green', 'WOKE Caring about others/Blambot Pro BB Regular/WOKE caring about others Blambot final.png', RB_WOKE, TP_WOKE],
+      ['Light blue & blue', 'WOKE Having empathy/Blambot Pro Reg/WOKE caring about others blue and blue.png', RB_WOKE, TP_WOKE],
+    ],
+  },
+  'woke-caring-about-others-rounded': {
+    folder: 'Tshirts/WOKE Caring about others/Hobieux',
+    colors: [
+      ['Pink & white', 'Hobieux Blue Base glow under frame woke caring about others pink white trim.png', 170043738, '74417130-woke-aka-caring-about-others-hp'],
+      ['Navy & green', 'Hobieux Blue Base glow under frame woke caring about others light blue final.png', RB_WOKE, TP_WOKE],
+    ],
+  },
+  // WOKE aka Having Empathy: one design per font.
+  'woke-having-empathy': {
+    folder: 'Tshirts/WOKE Having empathy/Modesto Expanded version',
+    colors: [
+      ['Light blue & blue', 'WOKE having empathy final modesto expanded final blue on blue.png', 170043124, '74442312-woke-aka-having-empathy-carolina-blue'],
+      ['Navy & green', 'WOKE having empathy final modesto expanded final.png', RB_WOKE, TP_WOKE],
+    ],
+  },
+  'woke-having-empathy-serif': {
+    folder: 'Tshirts/WOKE Having empathy/Amster',
+    colors: [['Navy & green', 'WOKE having empathy no background lighter blue (1) final copy.png', 170042605, '74441503-woke-aka-having-empathy']],
+  },
+  'woke-having-empathy-comic': {
+    folder: 'Tshirts/WOKE Having empathy/Blambot Pro Reg',
+    colors: [
+      ['Pink & white', 'WOKE having empathy final pink white trim.png', 170043429, '74441820-woke-aka-having-empathy-hot-pink'],
+      ['Navy & green', 'WOKE having empathy final.png', RB_WOKE, TP_WOKE],
+    ],
+  },
+  'woke-having-empathy-rounded': {
+    folder: 'Tshirts/WOKE Having empathy/Hobieux Bold',
+    colors: [['Navy & lime green', 'WOKE having empathy blue lime green trim final.png', 170042278, '74442085-woke-aka-having-empathy']],
+  },
 };
+
+async function copyArtwork(src, outName) {
+  await sharp(src, { limitInputPixels: false })
+    .trim({ threshold: 1 })
+    .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
+    .toFile(path.join(root, 'src/assets/designs', outName));
+}
 
 sharp.cache(false);
 const q = (s) => JSON.stringify(s);
@@ -141,12 +215,11 @@ for (const [design, { folder, colors }] of Object.entries(sets)) {
     let image = mainImage;
     if (i > 0) {
       const outName = `${design}-${slug(name)}.png`;
-      await sharp(src, { limitInputPixels: false })
-        .trim({ threshold: 1 })
-        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-        .png({ compressionLevel: 9, adaptiveFiltering: true })
-        .toFile(path.join(root, 'src/assets/designs', outName));
+      await copyArtwork(src, outName);
       image = `/src/assets/designs/${outName}`;
+    } else if (!existsSync(path.join(root, mainImage.replace(/^\//, '')))) {
+      // New design: its main picture is the first colour's artwork.
+      await copyArtwork(src, path.basename(mainImage));
     }
     items.push([
       `  - name: ${q(name)}`,
@@ -159,6 +232,7 @@ for (const [design, { folder, colors }] of Object.entries(sets)) {
   // Replace any earlier colour list, then add the new one just before the closing ---.
   const [, front, rest] = md.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   const cleaned = front.replace(/\ncolorways:\n(?:  [\s\S]*?)(?=\n\S|$)/, '');
-  await writeFile(mdPath, `---\n${cleaned}\ncolorways:\n${items.join('\n')}\n---\n${rest}`);
+  const list = colors.length > 1 ? `\ncolorways:\n${items.join('\n')}` : '';
+  await writeFile(mdPath, `---\n${cleaned}${list}\n---\n${rest}`);
   console.log(`${design}: ${colors.length} colours`);
 }
