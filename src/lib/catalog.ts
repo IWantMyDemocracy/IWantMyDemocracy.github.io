@@ -129,12 +129,12 @@ export const designsInCause = (designs: Design[], cause: Cause) => designs.filte
 export const causesOf = (design: Design, causes: Cause[]) => causes.filter((c) => design.causeKeys.includes(c.key));
 
 /**
- * Store buttons only appear when both the store and the design have a link. A colour without
- * its own link uses the design's main link.
+ * Store buttons only appear when both the store and the design (or the chosen colour) have a
+ * link. A colour only shows a store's button when that store sells that exact colour.
  */
 export function storeLinks(d: Design, colorway?: Colorway) {
-  const teepublic = colorway?.teepublicUrl || d.teepublicUrl;
-  const redbubble = colorway?.redbubbleUrl || d.redbubbleUrl;
+  const teepublic = colorway ? colorway.teepublicUrl : d.teepublicUrl;
+  const redbubble = colorway ? colorway.redbubbleUrl : d.redbubbleUrl;
   return {
     teepublic: settings.teepublicStore && teepublic ? teepublic : '',
     redbubble: settings.redbubbleStore && redbubble ? redbubble : '',

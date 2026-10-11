@@ -4,7 +4,7 @@ image: "/src/assets/designs/fight-fascism.png"
 causes:
   - "src/content/causes/fight-fascism.md"
 redbubbleUrl: "https://www.redbubble.com/shop/ap/172520344"
-teepublicUrl: "https://www.teepublic.com/t-shirt/78107416-fight-fascism"
+teepublicUrl: ""
 description: "Comes in 11 colors. Pick yours below."
 featured: true
 hidden: false
@@ -41,7 +41,7 @@ colorways:
   - name: "Magenta"
     image: "/src/assets/designs/fight-fascism-magenta.png"
     redbubbleUrl: "https://www.redbubble.com/shop/ap/172581260"
-    teepublicUrl: ""
+    teepublicUrl: "https://www.teepublic.com/t-shirt/78107416-fight-fascism"
   - name: "Orange"
     image: "/src/assets/designs/fight-fascism-orange.png"
     redbubbleUrl: "https://www.redbubble.com/shop/ap/172581281"

@@ -1,7 +1,9 @@
 // Adds colour choices ("colorways") to designs that come in several colours: copies each
 // colour's artwork into the site and writes the list into the design's content file.
-// Store links are matched by the colour names in the Redbubble and TeePublic listing titles;
-// colours without a confident match fall back to the design's main store links.
+// Every colour below was checked against the pictures of the Redbubble and TeePublic listings
+// (October 2026). A colour only gets a store link when that store sells that exact colour, and
+// only colours sold in at least one store are included. The design's main store links and its
+// "Comes in N colors" sentence are kept in step with the first colour and the colour count.
 // Usage: FAUBER_DESIGN_DIR=<Fauber Design folder> node scripts/seed/colorways.mjs
 import sharp from 'sharp';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -13,16 +15,11 @@ const SOURCE_ROOT = process.env.FAUBER_DESIGN_DIR ?? '';
 if (!SOURCE_ROOT) throw new Error('Set FAUBER_DESIGN_DIR to the Fauber Design folder first.');
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const isUrl = (v) => typeof v === 'string' && v.startsWith('http');
-const rb = (id) => (isUrl(id) ? id : id ? `https://www.redbubble.com/shop/ap/${id}` : '');
-const tp = (idSlug) => (isUrl(idSlug) ? idSlug : idSlug ? `https://www.teepublic.com/t-shirt/${idSlug}` : '');
+const rb = (id) => (id ? `https://www.redbubble.com/shop/ap/${id}` : '');
+const tp = (idSlug) => (idSlug ? `https://www.teepublic.com/t-shirt/${idSlug}` : '');
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-// Colours that aren't listed in a store yet point to the WOKE collection / album instead.
-const RB_WOKE = 'https://www.redbubble.com/people/fauberdesign/shop?asc=u&collections=4254682';
-const TP_WOKE = 'https://www.teepublic.com/user/i-want-my-democracy/albums/459059-woke';
-
-// [colour name, artwork file (relative to the folder), Redbubble work id or URL, TeePublic id-slug or URL]
+// [colour name, artwork file (relative to the folder), Redbubble work id, TeePublic id-slug]
 // The first colour is the design's main picture. A design with a single entry only gets its
 // picture copied (no colour list).
 const sets = {
@@ -36,7 +33,7 @@ const sets = {
       ['Grape', 'Copperplate Grape.png', 172520474],
       ['Green', 'Copperplate Green.png', 172581207],
       ['Lime green', 'Copperplate Lime green.png', 172581236],
-      ['Magenta', 'Copperplate Magenta.png', 172581260],
+      ['Magenta', 'Copperplate Magenta.png', 172581260, '78107416-fight-fascism'],
       ['Orange', 'Copperplate Orange.png', 172581281],
       ['Pink', 'Copperplate Pink.png', 172581304],
       ['Yellow', 'Copperplate Yellow.png', 172581322],
@@ -51,9 +48,9 @@ const sets = {
       ['Black & grey', 'Nexa Rust worn/blk grey.png', 172590074, '79533573-fascism-sucks-dk-grey'],
       ['Brown', 'Nexa Rust worn/brown.png', 172590121, '79533699-fascism-sucks-brown'],
       ['Grape', 'Nexa Rust worn/grape.png', null, '79533777-fascism-sucks-grape'],
-      ['Green', 'Nexa Rust worn/green.png', 172612690, '79533958-fascism-sucks-green'],
-      ['Green two-tone', 'Nexa Rust worn/green tutone.png', 172612672],
-      ['Green multi', 'Nexa Rust worn/green multi.png', 172590267],
+      ['Green', 'Nexa Rust worn/green.png', 172612690, '79535130-fascism-sucks-forest-green'],
+      ['Green two-tone', 'Nexa Rust worn/green tutone.png', 172612672, '79534029-fascism-sucks-420green'],
+      ['Green multi', 'Nexa Rust worn/green multi.png', 172590267, '79533958-fascism-sucks-green'],
       ['Lime green', 'Nexa Rust worn/lime green.png', 172612714, '79534458-fascism-sucks-lime'],
       ['Magenta', 'Nexa Rust worn/magneta.png', 172612743, '79535206-fascism-sucks-magenta'],
       ['Orange', 'Nexa Rust worn/orange.png', 172612768, '79539857-fascism-sucks-orange'],
@@ -65,13 +62,13 @@ const sets = {
   'fascism-sucks-starburst': {
     folder: 'Tshirts/Fascism Sucks',
     colors: [
-      ['Red, white & blue', 'Fascism sucks red white blue.png', 172587587],
+      ['Red, white & blue', 'Fascism sucks red white blue.png', 172587587, '79563785-fascism-sucks-flower-pink-blue-greens'],
       ['Green & blue', 'Fascism sucks green blue.png', 172586546, '79555548-fascism-sucks-flower-bluegreens'],
       ['Green & fuchsia', 'Fascism sucks green fuchsia.png', 172586668, '79562591-fascism-sucks-flower-fuchsia-green-blue'],
       ['Green & grape', 'Fascism sucks green grape.png', 172587465, '79563445-fascism-sucks-flower-grape-blue-green'],
       ['Green & magenta', 'Fascism sucks green magenta.png', 172587494, '79563505-fascism-sucks-flower-magenta-blue-green'],
       ['Green & orange', 'Fascism sucks green orange.png', 172587520, '79563597-fascism-sucks-flower-orange-blue-greens'],
-      ['Green & pink', 'Fascism sucks green pink.png', 172587538, '79563785-fascism-sucks-flower-pink-blue-greens'],
+      ['Green & pink', 'Fascism sucks green pink.png', 172587538, '79563632-fascism-sucks-flower-pink-blue-greens'],
       ['Green & purple', 'Fascism sucks green purple.png', 172587557, '79563703-fascism-sucks-flower-purple-blue-greens'],
       ['Yellow & blue', 'Fascism sucks yellow blue.png', 172587620, '79563919-fascism-sucks-flower-yellow-orange-blue'],
       ['Yellow & fuchsia', 'Fascism sucks yellow fuschia.png', 172587643],
@@ -87,34 +84,36 @@ const sets = {
     folder: 'Tshirts/Fight Oligarchy/Bubble and',
     colors: [
       ['Blue & orange', 'Fight Oligarchy bubble original blue orange.png', 172513998],
-      ['Blue & lime green', 'Fight Oligarchy bubble original blue lime green 2.png'],
+      ['Blue & lime green', 'Fight Oligarchy bubble original blue lime green 2.png', 172510859],
       ['Dark purple & orange', 'Fight Oligarchy bubble original dkr purple orange.png', 172513857],
-      ['Fuchsia & orange', 'Fight Oligarchy bubble original fuchsia orange.png'],
-      ['Green & orange', 'Fight Oligarchy bubble original green orange.png'],
-      ['Light pink & green', 'Fight Oligarchy bubble original lt pink green.png'],
-      ['Magenta, pink & green', 'Fight Oligarchy bubble original magenta pink green.png'],
-      ['Orange & lime green', 'Fight Oligarchy bubble original orange lime green.png'],
-      ['Pink & lime green', 'Fight Oligarchy bubble original pink lime green.png'],
+      ['Fuchsia & orange', 'Fight Oligarchy bubble original fuchsia orange.png', 172517171],
+      ['Green & orange', 'Fight Oligarchy bubble original green orange.png', 172510990],
+      ['Light pink & green', 'Fight Oligarchy bubble original lt pink green.png', 172511028],
+      ['Magenta, pink & green', 'Fight Oligarchy bubble original magenta pink green.png', 172511051],
+      ['Orange & lime green', 'Fight Oligarchy bubble original orange lime green.png', 172511082],
+      ['Pink & lime green', 'Fight Oligarchy bubble original pink lime green.png', 172511108],
       ['Purple & green', 'Fight Oligarchy bubble original purple green.png', 172513963],
       ['Purple & lime green', 'Fight Oligarchy bubble original purple lime green.png', 172513712],
       ['Purple & orange', 'Fight Oligarchy bubble original purple orange.png', 172517121],
     ],
   },
+  // The block-letter colours are on Redbubble only; TeePublic's "Workers over billionaires" colour
+  // listings are the handwritten-script design.
   'workers-over-billionaires': {
     folder: 'Tshirts/Workers over Billionaires/Nexa rust slab shadow',
     colors: [
-      ['Blue', 'blue.png', 173052054, '79350012-workers-over-billionaires-blue'],
-      ['Aqua', 'aqua.png'],
-      ['Black', 'black.png', 173052039, '79350018-workers-over-billionaires-black'],
+      ['Blue', 'blue.png', 173052054],
+      ['Aqua', 'aqua.png', 173051864],
+      ['Black', 'black.png', 173052039],
       ['Grey', 'grey.png', 173052080],
-      ['Kelly green', 'kelly green.png', 173052093, '79350013-workers-over-billionaires-green'],
-      ['Orange', 'orange.png', 173052109, '79350020-workers-over-billionaires-orange'],
-      ['Pink', 'pink.png', 173052122, '79350019-workers-over-billionaires-pink'],
-      ['Purple', 'purple.png', 173052139, '79350016-workers-over-billionaires-purple'],
+      ['Kelly green', 'kelly green.png', 173052093],
+      ['Orange', 'orange.png', 173052109],
+      ['Pink', 'pink.png', 173052122],
+      ['Purple', 'purple.png', 173052139],
       ['Raspberry', 'raspberry.png', 173052168],
       ['Teal', 'teal.png', 173052196],
-      ['White', 'white.png', 173052379, '79350014-workers-over-billionaires-white'],
-      ['Yellow', 'yellow.png', 173052216, '79350015-workers-over-billionaires-yellow'],
+      ['White', 'white.png', 173052379],
+      ['Yellow', 'yellow.png', 173052216],
     ],
   },
   'workers-over-billionaires-pow': {
@@ -141,39 +140,26 @@ const sets = {
   'woke-caring-about-others': {
     folder: 'Tshirts/WOKE Caring about others/Modesto Expanded',
     colors: [
-      ['Light blue & dark blue', 'Blue Base glow under frame woke caring about others light blue dk blue trim.png', RB_WOKE, '74440638-woke-is-caring-about-others-light-blue'],
+      ['Light blue & dark blue', 'Blue Base glow under frame woke caring about others light blue dk blue trim.png', null, '74440638-woke-is-caring-about-others-light-blue'],
       ['Navy & green', 'Blue Base glow under frame woke caring about others light blue final.png', 170066550, '74420250-woke-aka-caring-about-others'],
     ],
   },
   'woke-caring-about-others-serif': {
     folder: 'Tshirts/WOKE Caring about others/Amster',
-    colors: [
-      ['Light blue & dark blue', 'Blue Base glow under frame woke caring about others light blue dk blue trim.png', 170066767, '74416587-woke-aka-caring-about-others-carolina-blue'],
-      ['Navy & green', 'Blue Base glow under frame woke caring about others light blue final.png', RB_WOKE, TP_WOKE],
-    ],
+    colors: [['Light blue & dark blue', 'Blue Base glow under frame woke caring about others light blue dk blue trim.png', 170066767, '74416587-woke-aka-caring-about-others-carolina-blue']],
   },
   'woke-caring-about-others-comic': {
-    folder: 'Tshirts',
-    colors: [
-      ['Green & white', 'WOKE Caring about others/Blambot Pro BB Regular/WOKE caring about others Blambot green white trim.png', 170067109, '74394495-woke-aka-caring-about-others-brat-white-trim'],
-      ['Navy & green', 'WOKE Caring about others/Blambot Pro BB Regular/WOKE caring about others Blambot final.png', RB_WOKE, TP_WOKE],
-      ['Light blue & blue', 'WOKE Having empathy/Blambot Pro Reg/WOKE caring about others blue and blue.png', RB_WOKE, TP_WOKE],
-    ],
+    folder: 'Tshirts/WOKE Caring about others/Blambot Pro BB Regular',
+    colors: [['Green & white', 'WOKE caring about others Blambot green white trim.png', 170067109, '74394495-woke-aka-caring-about-others-brat-white-trim']],
   },
   'woke-caring-about-others-rounded': {
     folder: 'Tshirts/WOKE Caring about others/Hobieux',
-    colors: [
-      ['Pink & white', 'Hobieux Blue Base glow under frame woke caring about others pink white trim.png', 170043738, '74417130-woke-aka-caring-about-others-hp'],
-      ['Navy & green', 'Hobieux Blue Base glow under frame woke caring about others light blue final.png', RB_WOKE, TP_WOKE],
-    ],
+    colors: [['Pink & white', 'Hobieux Blue Base glow under frame woke caring about others pink white trim.png', 170043738, '74417130-woke-aka-caring-about-others-hp']],
   },
   // WOKE aka Having Empathy: one design per font.
   'woke-having-empathy': {
     folder: 'Tshirts/WOKE Having empathy/Modesto Expanded version',
-    colors: [
-      ['Light blue & blue', 'WOKE having empathy final modesto expanded final blue on blue.png', 170043124, '74442312-woke-aka-having-empathy-carolina-blue'],
-      ['Navy & green', 'WOKE having empathy final modesto expanded final.png', RB_WOKE, TP_WOKE],
-    ],
+    colors: [['Light blue & blue', 'WOKE having empathy final modesto expanded final blue on blue.png', 170043124, '74442312-woke-aka-having-empathy-carolina-blue']],
   },
   'woke-having-empathy-serif': {
     folder: 'Tshirts/WOKE Having empathy/Amster',
@@ -181,10 +167,7 @@ const sets = {
   },
   'woke-having-empathy-comic': {
     folder: 'Tshirts/WOKE Having empathy/Blambot Pro Reg',
-    colors: [
-      ['Pink & white', 'WOKE having empathy final pink white trim.png', 170043429, '74441820-woke-aka-having-empathy-hot-pink'],
-      ['Navy & green', 'WOKE having empathy final.png', RB_WOKE, TP_WOKE],
-    ],
+    colors: [['Pink & white', 'WOKE having empathy final pink white trim.png', 170043429, '74441820-woke-aka-having-empathy-hot-pink']],
   },
   'woke-having-empathy-rounded': {
     folder: 'Tshirts/WOKE Having empathy/Hobieux Bold',
@@ -229,10 +212,21 @@ for (const [design, { folder, colors }] of Object.entries(sets)) {
     ].join('\n'));
   }
 
-  // Replace any earlier colour list, then add the new one just before the closing ---.
   const [, front, rest] = md.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-  const cleaned = front.replace(/\ncolorways:\n(?:  [\s\S]*?)(?=\n\S|$)/, '');
+  const [, , firstRb, firstTp] = colors[0];
+  const count = colors.length > 1 ? `Comes in ${colors.length} colors. Pick yours below.` : '';
+  const updated = front
+    // Replace any earlier colour list (it always comes last).
+    .replace(/\ncolorways:\n(?:  [\s\S]*?)(?=\n\S|$)/, '')
+    // The card's shop buttons match the main picture.
+    .replace(/^redbubbleUrl: .*$/m, `redbubbleUrl: ${q(rb(firstRb))}`)
+    .replace(/^teepublicUrl: .*$/m, `teepublicUrl: ${q(tp(firstTp))}`)
+    // Keep the "Comes in N colors" sentence in step with the colours.
+    .replace(/^description: "(.*)"$/m, (_, d) => {
+      const text = d.replace(/\s*Comes in \d+ colors(?: in two styles, worn and starburst)?\. Pick yours (?:below|in the store)\./, '').trim();
+      return `description: ${q([text, count].filter(Boolean).join(' '))}`;
+    });
   const list = colors.length > 1 ? `\ncolorways:\n${items.join('\n')}` : '';
-  await writeFile(mdPath, `---\n${cleaned}${list}\n---\n${rest}`);
-  console.log(`${design}: ${colors.length} colours`);
+  await writeFile(mdPath, `---\n${updated}${list}\n---\n${rest}`);
+  console.log(`${design}: ${colors.length} colour${colors.length > 1 ? 's' : ''}`);
 }

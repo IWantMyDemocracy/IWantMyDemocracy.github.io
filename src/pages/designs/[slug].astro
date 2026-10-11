@@ -18,13 +18,18 @@ const causes = causesOf(design, allCauses);
 const pageUrl = new URL(`/designs/${design.id}`, Astro.site).toString();
 
 // One "view" per colour (or just the main picture). Picking a colour swaps the picture and
-// points the shop buttons at that colour's listing.
+// points the shop buttons at that colour's listing; a store's button is hidden for colours
+// that store doesn't sell.
 const hasColors = design.colorways.length > 1;
 const colorSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const views = hasColors
   ? design.colorways.map((c) => ({ name: c.name, slug: colorSlug(c.name), image: c.image, links: storeLinks(design, c) }))
   : [{ name: '', slug: '', image: design.image, links: storeLinks(design) }];
 const links = views[0].links;
+const sells = {
+  teepublic: views.some((v) => v.links.teepublic),
+  redbubble: views.some((v) => v.links.redbubble),
+};
 
 // "More from this cause": same causes first, then other designs, never this one.
 const related = [
@@ -122,15 +127,29 @@ const description =
         }
 
         {
-          (links.teepublic || links.redbubble) && (
+          (sells.teepublic || sells.redbubble) && (
             <div class="design-buy">
-              {links.teepublic && (
-                <a class="btn btn-lg" href={links.teepublic} target="_blank" rel="noopener" data-buy="teepublic">
+              {sells.teepublic && (
+                <a
+                  class="btn btn-lg"
+                  href={links.teepublic || undefined}
+                  hidden={!links.teepublic}
+                  target="_blank"
+                  rel="noopener"
+                  data-buy="teepublic"
+                >
                   Shop on TeePublic <Icon name="external" class="ext" />
                 </a>
               )}
-              {links.redbubble && (
-                <a class="btn btn-lg" href={links.redbubble} target="_blank" rel="noopener" data-buy="redbubble">
+              {sells.redbubble && (
+                <a
+                  class="btn btn-lg"
+                  href={links.redbubble || undefined}
+                  hidden={!links.redbubble}
+                  target="_blank"
+                  rel="noopener"
+                  data-buy="redbubble"
+                >
                   Shop on Redbubble <Icon name="external" class="ext" />
                 </a>
               )}
@@ -183,8 +202,14 @@ const description =
     swatches.forEach((s) => s.setAttribute('aria-checked', String(s === btn)));
     views.forEach((v) => (v.hidden = v.dataset.colorView !== index));
     if (nameEl) nameEl.textContent = btn.dataset.name ?? '';
-    if (buy.teepublic && btn.dataset.teepublic) buy.teepublic.href = btn.dataset.teepublic;
-    if (buy.redbubble && btn.dataset.redbubble) buy.redbubble.href = btn.dataset.redbubble;
+    // Show a store's button only when that store sells the chosen colour.
+    for (const store of ['teepublic', 'redbubble'] as const) {
+      const link = buy[store];
+      const href = btn.dataset[store];
+      if (!link) continue;
+      link.hidden = !href;
+      if (href) link.href = href;
+    }
     if (updateUrl) {
       const url = new URL(location.href);
       if (index === '0') url.searchParams.delete('color');

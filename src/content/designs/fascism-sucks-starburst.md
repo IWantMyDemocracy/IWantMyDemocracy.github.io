@@ -3,8 +3,8 @@ title: "Fascism Sucks: Starburst"
 image: "/src/assets/designs/fascism-sucks-starburst-red-white-blue.png"
 causes:
   - "src/content/causes/fight-fascism.md"
-redbubbleUrl: "https://www.redbubble.com/people/fauberdesign/shop?asc=u&collections=4325354"
-teepublicUrl: "https://www.teepublic.com/user/i-want-my-democracy/albums/459057-fascism"
+redbubbleUrl: "https://www.redbubble.com/shop/ap/172587587"
+teepublicUrl: "https://www.teepublic.com/t-shirt/79563785-fascism-sucks-flower-pink-blue-greens"
 description: "Comes in 16 colors. Pick yours below."
 featured: false
 hidden: false
@@ -13,7 +13,7 @@ colorways:
   - name: "Red, white & blue"
     image: "/src/assets/designs/fascism-sucks-starburst-red-white-blue.png"
     redbubbleUrl: "https://www.redbubble.com/shop/ap/172587587"
-    teepublicUrl: ""
+    teepublicUrl: "https://www.teepublic.com/t-shirt/79563785-fascism-sucks-flower-pink-blue-greens"
   - name: "Green & blue"
     image: "/src/assets/designs/fascism-sucks-starburst-green-blue.png"
     redbubbleUrl: "https://www.redbubble.com/shop/ap/172586546"
@@ -37,7 +37,7 @@ colorways:
   - name: "Green & pink"
     image: "/src/assets/designs/fascism-sucks-starburst-green-pink.png"
     redbubbleUrl: "https://www.redbubble.com/shop/ap/172587538"
-    teepublicUrl: "https://www.teepublic.com/t-shirt/79563785-fascism-sucks-flower-pink-blue-greens"
+    teepublicUrl: "https://www.teepublic.com/t-shirt/79563632-fascism-sucks-flower-pink-blue-greens"
   - name: "Green & purple"
     image: "/src/assets/designs/fascism-sucks-starburst-green-purple.png"
     redbubbleUrl: "https://www.redbubble.com/shop/ap/172587557"
