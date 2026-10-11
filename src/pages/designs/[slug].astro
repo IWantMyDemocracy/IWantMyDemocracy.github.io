@@ -1,0 +1,216 @@
+---
+import { Picture } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import DesignCard from '../../components/DesignCard.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
+import Icon from '../../components/Icon.astro';
+import { getCauses, getDesigns, causesOf, storeLinks, type Design } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const designs = await getDesigns();
+  return designs.map((design) => ({ params: { slug: design.id }, props: { design } }));
+}
+
+const { design } = Astro.props as { design: Design };
+const allCauses = await getCauses();
+const designs = await getDesigns();
+const causes = causesOf(design, allCauses);
+const links = storeLinks(design);
+const pageUrl = new URL(`/designs/${design.id}`, Astro.site).toString();
+
+// "More from this cause": same causes first, then other designs, never this one.
+const related = [
+  ...designs.filter((d) => d.id !== design.id && d.causeKeys.some((k) => design.causeKeys.includes(k))),
+  ...designs.filter((d) => d.id !== design.id && !d.causeKeys.some((k) => design.causeKeys.includes(k))),
+].slice(0, 4);
+const description =
+  design.description ||
+  `"${design.title}" by I Want My Democracy. Available on T-shirts, hoodies, hats, mugs, stickers and more.`;
+---
+
+<Base title={design.title} description={description} ogImage={`/og/${design.id}.png`}>
+  <section class="design-hero">
+    <div class="container design-layout">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/designs">All designs</a>
+        {
+          causes[0] && (
+            <>
+              <span aria-hidden="true">/</span>
+              <a href={`/causes/${causes[0].id}`}>{causes[0].name}</a>
+            </>
+          )
+        }
+      </nav>
+
+      <div class="design-image">
+        <Picture
+          src={design.image}
+          alt={design.title}
+          formats={['avif']}
+          fallbackFormat="webp"
+          widths={[400, 640, 900, 1200]}
+          sizes="(max-width: 860px) 92vw, 560px"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+
+      <div class="design-info">
+        {
+          causes.length > 0 && (
+            <ul class="design-causes">
+              {causes.map((c) => (
+                <li>
+                  <a class="chip" href={`/causes/${c.id}`}>
+                    {c.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        <h1>{design.title}</h1>
+        {design.description && <p class="design-desc">{design.description}</p>}
+        <p class="design-products">
+          Available on T-shirts, hoodies, hats, mugs, pillows, phone cases, stickers, magnets and more. Choose your
+          product, size and color on the store.
+        </p>
+
+        {
+          (links.teepublic || links.redbubble) && (
+            <div class="design-buy">
+              {links.teepublic && (
+                <a class="btn btn-lg" href={links.teepublic} target="_blank" rel="noopener">
+                  Shop on TeePublic <Icon name="external" class="ext" />
+                </a>
+              )}
+              {links.redbubble && (
+                <a class="btn btn-lg" href={links.redbubble} target="_blank" rel="noopener">
+                  Shop on Redbubble <Icon name="external" class="ext" />
+                </a>
+              )}
+            </div>
+          )
+        }
+
+        <ShareButtons url={pageUrl} title={design.title} />
+      </div>
+    </div>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="section section-tint">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">Keep browsing</span>
+              <h2>{causes[0] ? `More from ${causes[0].name}` : 'More designs'}</h2>
+            </div>
+            {causes[0] && (
+              <a class="link-arrow" href={`/causes/${causes[0].id}`}>
+                See all
+              </a>
+            )}
+          </div>
+          <div class="design-grid">
+            {related.map((d) => (
+              <DesignCard design={d} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .design-hero {
+    background: linear-gradient(180deg, var(--tint) 0%, var(--white) 70%);
+    padding-block: 24px clamp(40px, 6vw, 72px);
+  }
+  .design-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'crumbs crumbs'
+      'image info';
+    gap: 18px clamp(24px, 5vw, 56px);
+    align-items: start;
+  }
+  .crumbs {
+    grid-area: crumbs;
+    display: flex;
+    gap: 8px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .crumbs a {
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    text-decoration: underline;
+  }
+  .design-image {
+    grid-area: image;
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: calc(var(--radius) * 1.4);
+    background: radial-gradient(circle at 50% 42%, var(--white) 0%, var(--tint) 78%);
+    box-shadow: var(--shadow-lg);
+    border: 6px solid var(--white);
+  }
+  .design-image :global(img) {
+    position: absolute;
+    inset: 7%;
+    width: 86%;
+    height: 86%;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 14px rgb(11 31 77 / 0.14));
+  }
+  .design-info {
+    grid-area: info;
+    display: grid;
+    gap: 18px;
+    align-content: start;
+  }
+  .design-info h1 {
+    color: var(--royal);
+    font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+    margin: 0;
+  }
+  .design-causes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .design-desc {
+    font-size: 1.15rem;
+    margin: 0;
+  }
+  .design-products {
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .design-buy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 0;
+    border-block: 1px solid var(--tint-2);
+  }
+  @media (max-width: 860px) {
+    .design-layout {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'crumbs' 'image' 'info';
+    }
+    .design-buy .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

@@ -1,0 +1,149 @@
+---
+import { Picture } from 'astro:assets';
+import Icon from './Icon.astro';
+import { storeLinks, type Design } from '../lib/catalog';
+
+interface Props {
+  design: Design;
+  /** Load the picture right away (for cards near the top of the page). */
+  eager?: boolean;
+}
+const { design, eager = false } = Astro.props;
+const links = storeLinks(design);
+const href = `/designs/${design.id}`;
+---
+
+<article
+  class="card"
+  data-card
+  data-title={design.title.toLowerCase()}
+  data-causes={design.causeKeys.join(' ')}
+  data-added={design.dateAdded?.toISOString().slice(0, 10)}
+>
+  <a class="card-image" href={href} tabindex="-1" aria-hidden="true">
+    <Picture
+      src={design.image}
+      alt=""
+      formats={['avif']}
+      fallbackFormat="webp"
+      widths={[240, 360, 480, 720]}
+      sizes="(max-width: 520px) 46vw, (max-width: 1200px) 30vw, 270px"
+      loading={eager ? 'eager' : 'lazy'}
+    />
+    <span class="badge-new" hidden data-new-badge>New</span>
+  </a>
+  <div class="card-body">
+    <h3 class="card-title"><a href={href}>{design.title}</a></h3>
+    {
+      (links.teepublic || links.redbubble) && (
+        <div class="card-actions">
+          {links.teepublic && (
+            <a class="btn btn-sm" href={links.teepublic} target="_blank" rel="noopener">
+              TeePublic <Icon name="external" class="ext" />
+            </a>
+          )}
+          {links.redbubble && (
+            <a class="btn btn-sm" href={links.redbubble} target="_blank" rel="noopener">
+              Redbubble <Icon name="external" class="ext" />
+            </a>
+          )}
+        </div>
+      )
+    }
+  </div>
+</article>
+
+<script>
+  // "New" badge for designs added in the last 30 days (checked in the browser so it expires on its own).
+  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  document.querySelectorAll<HTMLElement>('[data-card][data-added]').forEach((card) => {
+    const added = Date.parse(card.dataset.added ?? '');
+    if (added && added >= cutoff) card.querySelector<HTMLElement>('[data-new-badge]')?.removeAttribute('hidden');
+  });
+</script>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+  .card-image {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    background: radial-gradient(circle at 50% 40%, var(--white) 0%, var(--tint) 75%);
+  }
+  .card-image :global(img) {
+    position: absolute;
+    inset: 8%;
+    width: 84%;
+    height: 84%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgb(11 31 77 / 0.12));
+  }
+  .badge-new {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--red);
+    color: var(--white);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 999px;
+  }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 14px 16px;
+    flex: 1;
+    border-top: 3px solid var(--tint-2);
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.3;
+  }
+  .card-title a {
+    color: var(--navy);
+    text-decoration: none;
+  }
+  .card-title a:hover {
+    color: var(--royal);
+    text-decoration: underline;
+  }
+  .card-actions {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .card-actions .btn {
+    flex: 1 1 auto;
+  }
+  @media (max-width: 520px) {
+    .card-body {
+      padding: 10px 10px 12px;
+    }
+    .card-title {
+      font-size: 0.92rem;
+    }
+    .card-actions .btn {
+      font-size: 0.8rem;
+      padding: 0.5em 0.7em;
+    }
+  }
+</style>

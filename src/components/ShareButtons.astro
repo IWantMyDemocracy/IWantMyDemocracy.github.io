@@ -1,0 +1,151 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  url: string;
+  title: string;
+}
+const { url, title } = Astro.props;
+const text = `${title} | I Want My Democracy`;
+const u = encodeURIComponent(url);
+const t = encodeURIComponent(text);
+const both = encodeURIComponent(`${text} ${url}`);
+
+const links = [
+  { icon: 'facebook', name: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },
+  { icon: 'x', name: 'X', href: `https://x.com/intent/post?url=${u}&text=${t}` },
+  { icon: 'threads', name: 'Threads', href: `https://www.threads.net/intent/post?text=${both}` },
+  { icon: 'bluesky', name: 'Bluesky', href: `https://bsky.app/intent/compose?text=${both}` },
+] as const;
+---
+
+<div class="share" data-share data-url={url} data-title={text}>
+  <p class="share-label">Share this design</p>
+  <ul class="share-list">
+    {
+      links.map((l) => (
+        <li>
+          <a class="share-btn" href={l.href} target="_blank" rel="noopener" aria-label={`Share on ${l.name}`}>
+            <Icon name={l.icon} size={20} />
+            <span>{l.name}</span>
+          </a>
+        </li>
+      ))
+    }
+    <li>
+      <button class="share-btn" type="button" data-share-instagram aria-label="Share on Instagram">
+        <Icon name="instagram" size={20} />
+        <span>Instagram</span>
+      </button>
+    </li>
+    <li>
+      <button class="share-btn" type="button" data-share-copy>
+        <Icon name="link" size={20} />
+        <span>Copy link</span>
+      </button>
+    </li>
+  </ul>
+  <p class="share-toast" role="status" aria-live="polite" data-share-toast></p>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-share]').forEach((box) => {
+    const url = box.dataset.url ?? location.href;
+    const title = box.dataset.title ?? document.title;
+    const toast = box.querySelector<HTMLElement>('[data-share-toast]');
+    let timer: number | undefined;
+
+    const say = (msg: string) => {
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(timer);
+      timer = window.setTimeout(() => toast.classList.remove('show'), 4000);
+    };
+
+    const copy = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        return true;
+      } catch {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.append(input);
+        input.select();
+        const ok = document.execCommand('copy');
+        input.remove();
+        return ok;
+      }
+    };
+
+    box.querySelector('[data-share-copy]')?.addEventListener('click', async () => {
+      say((await copy()) ? 'Link copied!' : url);
+    });
+
+    // Instagram can't be posted to from a website. Phones get the share menu (Instagram is in it
+    // when the app is installed); computers get the link copied with a short how-to.
+    box.querySelector('[data-share-instagram]')?.addEventListener('click', async () => {
+      const touch = matchMedia('(pointer: coarse)').matches;
+      if (touch && navigator.share) {
+        try {
+          await navigator.share({ title, url });
+          return;
+        } catch (e) {
+          if ((e as DOMException).name === 'AbortError') return;
+        }
+      }
+      if (await copy()) say('Link copied! Paste it into your Instagram post, story, or bio.');
+      else say(url);
+    });
+  });
+</script>
+
+<style>
+  .share {
+    position: relative;
+  }
+  .share-label {
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .share-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 700 0.88rem/1 var(--font-body);
+    padding: 9px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--tint-2);
+    background: var(--white);
+    color: var(--royal);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .share-btn:hover {
+    background: var(--tint);
+    color: var(--royal-dark);
+  }
+  .share-toast {
+    margin: 12px 0 0;
+    min-height: 1.5em;
+    font-weight: 700;
+    color: var(--royal);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .share-toast.show {
+    opacity: 1;
+  }
+</style>

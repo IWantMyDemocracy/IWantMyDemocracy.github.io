@@ -1,0 +1,224 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import logo from '../assets/brand/logo-on-blue.png';
+import type { Cause } from '../lib/catalog';
+
+interface Props {
+  causes: Cause[];
+  home?: boolean;
+}
+const { causes, home = false } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '');
+const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);
+---
+
+<header class:list={['site-header', { 'logo-hidden': home }]} data-header>
+  <div class="container header-inner">
+    <a href="/" class="header-logo" aria-label="I Want My Democracy, home">
+      <Image src={logo} alt="" width={180} densities={[1, 2]} loading="eager" />
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
+      <Icon name="menu" class="icon-open" />
+      <Icon name="close" class="icon-close" />
+      <span class="visually-hidden">Menu</span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main" data-nav>
+      <ul class="nav-list">
+        <li class="nav-item has-dropdown">
+          <details class="dropdown" data-dropdown>
+            <summary class="nav-link">Shop by Cause <Icon name="chevron" size={18} /></summary>
+            <ul class="dropdown-panel">
+              {
+                causes.map((c) => (
+                  <li>
+                    <a href={`/causes/${c.id}`} aria-current={current(`/causes/${c.id}`)}>
+                      {c.name}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </details>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="/designs" aria-current={current('/designs')}>All Designs</a></li>
+        <li class="nav-item"><a class="nav-link" href="/#products">Shop by Product</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about" aria-current={current('/about')}>About</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="stripe-rule" aria-hidden="true"></div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    nav?.classList.toggle('open', open);
+  });
+
+  // Close the cause dropdown when clicking elsewhere or pressing Escape.
+  const dropdowns = document.querySelectorAll<HTMLDetailsElement>('[data-dropdown]');
+  document.addEventListener('click', (e) => {
+    dropdowns.forEach((d) => {
+      if (d.open && !d.contains(e.target as Node)) d.open = false;
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') dropdowns.forEach((d) => (d.open = false));
+  });
+
+  // Home page: show the small logo once the big one has scrolled away.
+  const bigLogo = document.querySelector('[data-hero-logo]');
+  if (header && bigLogo && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      header.classList.toggle('logo-hidden', entry.isIntersecting);
+    }).observe(bigLogo);
+  } else {
+    header?.classList.remove('logo-hidden');
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--navy);
+    color: var(--white);
+    box-shadow: 0 4px 18px rgb(0 0 0 / 0.18);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 68px;
+  }
+  .header-logo {
+    flex: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .header-logo img {
+    width: 150px;
+    height: auto;
+  }
+  .logo-hidden .header-logo {
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+  }
+
+  .menu-toggle {
+    display: none;
+    margin-left: auto;
+    background: transparent;
+    border: 0;
+    color: var(--white);
+    padding: 8px;
+    cursor: pointer;
+  }
+  .menu-toggle :global(.icon-close) { display: none; }
+  .menu-toggle[aria-expanded='true'] :global(.icon-open) { display: none; }
+  .menu-toggle[aria-expanded='true'] :global(.icon-close) { display: block; }
+
+  .site-nav { margin-left: auto; }
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 10px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    list-style: none;
+    white-space: nowrap;
+  }
+  .nav-link::-webkit-details-marker { display: none; }
+  .nav-link:hover,
+  .dropdown[open] > .nav-link {
+    background: rgb(255 255 255 / 0.12);
+    color: var(--white);
+  }
+  .nav-link[aria-current='page'] {
+    box-shadow: inset 0 -3px 0 var(--red);
+    border-radius: 0;
+  }
+
+  .has-dropdown { position: relative; }
+  .dropdown-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 250px;
+    list-style: none;
+    margin: 0;
+    padding: 8px;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    border-top: 4px solid var(--red);
+  }
+  .dropdown-panel a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--navy);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .dropdown-panel a:hover,
+  .dropdown-panel a[aria-current='page'] {
+    background: var(--tint);
+    color: var(--royal);
+  }
+
+  @media (max-width: 860px) {
+    .menu-toggle { display: inline-flex; }
+    .header-inner { flex-wrap: wrap; }
+    .site-nav {
+      display: none;
+      width: 100%;
+      margin: 0;
+      padding-bottom: 14px;
+    }
+    .site-nav.open { display: block; }
+    .nav-list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+    }
+    .nav-link {
+      width: 100%;
+      justify-content: space-between;
+      border-radius: var(--radius-sm);
+    }
+    .dropdown-panel {
+      position: static;
+      box-shadow: none;
+      margin-top: 4px;
+      min-width: 0;
+    }
+    /* On phones the menu logo is always visible so the header never looks empty. */
+    .logo-hidden .header-logo {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+  }
+</style>

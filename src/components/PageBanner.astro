@@ -1,0 +1,42 @@
+---
+// Blue banner at the top of inner pages.
+interface Props {
+  eyebrow?: string;
+  title: string;
+  text?: string;
+}
+const { eyebrow, title, text } = Astro.props;
+---
+
+<section class="page-banner">
+  <div class="container">
+    <slot name="before" />
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h1>{title}</h1>
+    {text && <p>{text}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .page-banner {
+    position: relative;
+    color: var(--white);
+    background: radial-gradient(120% 140% at 15% 0%, #2f63e6 0%, #1838c8 40%, var(--navy) 100%);
+    padding-block: clamp(36px, 6vw, 64px);
+    border-bottom: 5px solid var(--red);
+  }
+  .page-banner .eyebrow {
+    color: var(--white);
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    margin-bottom: 0.3em;
+  }
+  p {
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: #dbe9ff;
+    max-width: 60ch;
+    margin: 0;
+  }
+</style>

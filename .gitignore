@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+Thumbs.db
+*.log
+# Local review file made by scripts/seed/seed.mjs
+design-checklist.html

@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import DesignCard from '../../components/DesignCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getCauses, getDesigns, designsInCause, type Cause } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const causes = await getCauses();
+  return causes.map((cause) => ({ params: { slug: cause.id }, props: { cause } }));
+}
+
+const { cause } = Astro.props as { cause: Cause };
+const causes = await getCauses();
+const designs = designsInCause(await getDesigns(), cause);
+const others = causes.filter((c) => c.id !== cause.id);
+const first = designs.find((d) => d.featured) ?? designs[0];
+---
+
+<Base
+  title={`${cause.name} T-Shirts & Gifts`}
+  description={cause.description || `${cause.name} designs on T-shirts, hoodies, mugs, stickers and more.`}
+  ogImage={first ? `/og/${first.id}.png` : undefined}
+>
+  <PageBanner eyebrow="Shop by cause" title={cause.name} text={cause.description}>
+    {
+      (cause.teepublicAlbum || cause.redbubbleCollection) && (
+        <div class="banner-actions">
+          {cause.teepublicAlbum && (
+            <a class="btn btn-white btn-sm" href={cause.teepublicAlbum} target="_blank" rel="noopener">
+              See all on TeePublic <Icon name="external" class="ext" />
+            </a>
+          )}
+          {cause.redbubbleCollection && (
+            <a class="btn btn-white btn-sm" href={cause.redbubbleCollection} target="_blank" rel="noopener">
+              See all on Redbubble <Icon name="external" class="ext" />
+            </a>
+          )}
+        </div>
+      )
+    }
+  </PageBanner>
+
+  <section class="section section-tint">
+    <div class="container">
+      <p class="count">{designs.length} {designs.length === 1 ? 'design' : 'designs'}</p>
+      {
+        designs.length > 0 ? (
+          <div class="design-grid">
+            {designs.map((d, i) => (
+              <DesignCard design={d} eager={i < 4} />
+            ))}
+          </div>
+        ) : (
+          <p>New designs for this cause are on the way. Check back soon!</p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section section-white">
+    <div class="container">
+      <h2 class="more-title">More causes</h2>
+      <ul class="cause-chips">
+        {others.map((c) => <li><a class="chip" href={`/causes/${c.id}`}>{c.name}</a></li>)}
+        <li><a class="chip chip-all" href="/designs">All designs</a></li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .banner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .count {
+    font-weight: 800;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+  }
+  .more-title {
+    color: var(--royal);
+    font-size: 1.6rem;
+  }
+  .cause-chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .cause-chips .chip {
+    font-size: 1rem;
+    padding: 0.55em 1.1em;
+  }
+  .chip-all {
+    background: var(--royal);
+    color: var(--white);
+    border-color: var(--royal);
+  }
+  .chip-all:hover {
+    background: var(--royal-dark);
+    color: var(--white);
+  }
+</style>

@@ -1,0 +1,178 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import EmailButton from './EmailButton.astro';
+import logo from '../assets/brand/logo-on-blue.png';
+import { getCauses, redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
+
+const causes = await getCauses();
+const socials = (
+  [
+    ['facebook', 'Facebook', settings.facebook],
+    ['instagram', 'Instagram', settings.instagram],
+    ['threads', 'Threads', settings.threads],
+    ['x', 'X', settings.x],
+    ['bluesky', 'Bluesky', settings.bluesky],
+    ['tiktok', 'TikTok', settings.tiktok],
+  ] as const
+).filter(([, , url]) => url);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="stripe-rule" aria-hidden="true"></div>
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="/" aria-label="I Want My Democracy, home">
+        <Image src={logo} alt="" width={260} densities={[1, 2]} />
+      </a>
+      <p>{settings.tagline}</p>
+      {
+        socials.length > 0 && (
+          <ul class="socials" aria-label="Follow us">
+            {socials.map(([icon, name, url]) => (
+              <li>
+                <a href={url} target="_blank" rel="noopener" aria-label={name}>
+                  <Icon name={icon} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <div>
+      <h2 class="footer-title">Shop</h2>
+      <ul class="footer-links">
+        {
+          settings.teepublicStore && (
+            <li>
+              <a href={teepublicShopUrl()} target="_blank" rel="noopener">Our TeePublic store</a>
+            </li>
+          )
+        }
+        {
+          settings.redbubbleStore && (
+            <li>
+              <a href={redbubbleShopUrl()} target="_blank" rel="noopener">Our Redbubble store</a>
+            </li>
+          )
+        }
+        <li><a href="/designs">All designs</a></li>
+        <li><a href="/#products">Shop by product</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="footer-title">Causes</h2>
+      <ul class="footer-links">
+        {causes.map((c) => <li><a href={`/causes/${c.id}`}>{c.name}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="footer-title">Say hello</h2>
+      <p class="footer-note">Questions, ideas for a new design, or just want to say hi?</p>
+      <EmailButton variant="outline" />
+      <p class="footer-note"><a href="/about">About us</a></p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <span>© {year} Fauber Design. All designs are original artwork.</span>
+      <span>Products are printed and shipped by Redbubble and TeePublic.</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .footer-grid {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
+    padding-block: 48px;
+  }
+  .footer-brand img {
+    width: 230px;
+    height: auto;
+    margin-bottom: 14px;
+  }
+  .footer-brand p,
+  .footer-note {
+    color: var(--sky-soft);
+    font-size: 0.95rem;
+  }
+  .footer-title {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 14px;
+  }
+  .footer-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .site-footer a {
+    color: var(--white);
+    text-decoration: none;
+  }
+  .site-footer a:hover {
+    color: var(--sky-soft);
+    text-decoration: underline;
+  }
+  .socials {
+    list-style: none;
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+  }
+  .socials a {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.1);
+  }
+  .socials a:hover {
+    background: var(--royal);
+    color: var(--white);
+  }
+  .footer-bottom {
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+    font-size: 0.85rem;
+    color: var(--sky-soft);
+    padding-block: 16px;
+  }
+  .footer-bottom .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 24px;
+  }
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 480px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

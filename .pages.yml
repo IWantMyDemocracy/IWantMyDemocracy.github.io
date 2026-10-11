@@ -1,0 +1,172 @@
+# Settings for the online editor (Pages CMS, https://app.pagescms.org).
+# It decides which forms you see when you log in and where your changes are saved.
+
+media:
+  - name: designs
+    label: Design pictures
+    input: src/assets/designs
+    output: /src/assets/designs
+    rename: safe
+    categories: [image]
+
+content:
+  - name: designs
+    label: Designs
+    type: collection
+    path: src/content/designs
+    format: yaml-frontmatter
+    filename:
+      template: "{title}.md"
+      field: false
+    view:
+      fields: [image, title, featured, hidden, dateAdded]
+      primary: title
+      sort: [dateAdded, title]
+      search: [title]
+      default:
+        sort: dateAdded
+        order: desc
+    fields:
+      - name: title
+        label: Design name
+        type: string
+        required: true
+        description: The name shown on the website, e.g. "Workers Over Billionaires".
+      - name: image
+        label: Picture
+        type: image
+        required: true
+        description: Upload the design artwork (PNG with a see-through background looks best) or a product photo.
+        options:
+          media: designs
+      - name: causes
+        label: Causes
+        type: reference
+        description: Pick one or more causes. The design shows up on each cause's page.
+        options:
+          collection: causes
+          multiple: true
+          search: name
+          value: "{path}"
+          label: "{primary}"
+      - name: teepublicUrl
+        label: TeePublic link
+        type: string
+        description: Open the design on TeePublic, copy the address from your browser and paste it here. Leave empty if it isn't on TeePublic.
+      - name: redbubbleUrl
+        label: Redbubble link
+        type: string
+        description: Open the design on Redbubble, copy the address from your browser and paste it here. Leave empty if it isn't on Redbubble.
+      - name: description
+        label: Short description (optional)
+        type: text
+        description: One or two sentences shown on the design's page, e.g. "Comes in 12 colors."
+      - name: featured
+        label: Feature on the home page
+        type: boolean
+      - name: hidden
+        label: Hide from the website
+        type: boolean
+        description: Turn on to take a design off the site without deleting it.
+      - name: dateAdded
+        label: Date added
+        type: date
+        description: Designs added in the last 30 days get a "New" badge.
+        options:
+          format: yyyy-MM-dd
+
+  - name: causes
+    label: Causes
+    type: collection
+    path: src/content/causes
+    format: yaml-frontmatter
+    filename:
+      template: "{name}.md"
+      field: false
+    view:
+      fields: [name, order, hidden]
+      primary: name
+      sort: [order, name]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: name
+        label: Cause name
+        type: string
+        required: true
+      - name: description
+        label: Short description
+        type: text
+        description: One sentence shown at the top of the cause's page.
+      - name: order
+        label: Position
+        type: number
+        description: 1 shows first in menus and on the home page, 2 second, and so on.
+      - name: cover
+        label: Cover picture (optional)
+        type: image
+        description: Leave empty to use a picture of one of the cause's designs.
+        options:
+          media: designs
+      - name: teepublicAlbum
+        label: TeePublic album link (optional)
+        type: string
+        description: Adds a "See all on TeePublic" button to the cause page.
+      - name: redbubbleCollection
+        label: Redbubble collection link (optional)
+        type: string
+        description: Adds a "See all on Redbubble" button to the cause page.
+      - name: hidden
+        label: Hide from the website
+        type: boolean
+
+  - name: settings
+    label: Settings
+    type: file
+    path: src/data/settings.json
+    format: json
+    fields:
+      - name: messageBar
+        label: Message bar
+        type: string
+        description: Short message in the blue bar at the very top of every page. Leave empty to hide the bar.
+      - name: tagline
+        label: Tagline
+        type: text
+        description: Shown under the big logo on the home page and in the footer.
+      - name: teepublicStore
+        label: TeePublic store link
+        type: string
+      - name: redbubbleStore
+        label: Redbubble store link
+        type: string
+      - name: email
+        label: Contact email
+        type: string
+      - name: facebook
+        label: Facebook link
+        type: string
+      - name: instagram
+        label: Instagram link
+        type: string
+      - name: threads
+        label: Threads link
+        type: string
+      - name: x
+        label: X (Twitter) link
+        type: string
+      - name: bluesky
+        label: Bluesky link
+        type: string
+      - name: tiktok
+        label: TikTok link
+        type: string
+        description: Social icons only appear for networks that have a link.
+      - name: aboutShort
+        label: About (short, for the home page)
+        type: text
+      - name: aboutText
+        label: About page text
+        type: text
+        description: Leave a blank line between paragraphs.

@@ -1,0 +1,120 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import CauseTile from '../components/CauseTile.astro';
+import DesignCard from '../components/DesignCard.astro';
+import ProductRow from '../components/ProductRow.astro';
+import donkey from '../assets/brand/donkey.png';
+import { getCauses, getDesigns, designsInCause, settings } from '../lib/catalog';
+
+const causes = await getCauses();
+const designs = await getDesigns();
+const causeTiles = causes
+  .map((c) => {
+    const list = designsInCause(designs, c);
+    return { cause: c, count: list.length, image: (list.find((d) => d.featured) ?? list[0])?.image };
+  })
+  .filter((t) => t.count > 0);
+
+// Featured designs first (newest first), then the newest others, filling complete rows of four.
+const featured = designs.filter((d) => d.featured);
+const spotlightCount = Math.ceil(Math.max(8, featured.length) / 4) * 4;
+const spotlight = [...featured, ...designs.filter((d) => !d.featured)].slice(0, spotlightCount);
+---
+
+<Base home>
+  <Hero />
+
+  <section class="section section-white" id="causes">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Find your cause</span>
+          <h2>Shop by Cause</h2>
+          <p>Every design is grouped by what it stands for. Pick a cause to see them all.</p>
+        </div>
+        <a class="link-arrow" href="/designs">See all {designs.length} designs</a>
+      </div>
+      <div class="cause-grid">
+        {causeTiles.map((t) => <CauseTile cause={t.cause} count={t.count} fallbackImage={t.image} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tint" id="featured">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Fan favorites</span>
+          <h2>Featured Designs</h2>
+          <p>Available on T-shirts, hoodies, hats, mugs, stickers and more.</p>
+        </div>
+        <a class="link-arrow" href="/designs">Browse all designs</a>
+      </div>
+      <div class="design-grid">
+        {spotlight.map((d, i) => <DesignCard design={d} eager={i < 4} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-navy" id="products">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Shop by product</span>
+          <h2>What are you looking for?</h2>
+          <p>Every design comes on dozens of products. Pick one and choose your store.</p>
+        </div>
+      </div>
+      <ProductRow />
+    </div>
+  </section>
+
+  <section class="section section-white about-strip">
+    <div class="container about-inner">
+      <Image src={donkey} alt="" widths={[200, 320, 480]} sizes="(max-width: 700px) 140px, 220px" class="about-donkey" />
+      <div>
+        <span class="eyebrow">Who we are</span>
+        <h2>Designs for democracy</h2>
+        <p>{settings.aboutShort}</p>
+        <a class="btn" href="/about">More about us</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .cause-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  }
+  @media (max-width: 520px) {
+    .cause-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+  .about-inner {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: clamp(20px, 5vw, 64px);
+    max-width: 920px;
+  }
+  .about-inner h2 {
+    color: var(--royal);
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+  }
+  .about-inner :global(.about-donkey) {
+    width: clamp(120px, 20vw, 220px);
+    height: auto;
+  }
+  @media (max-width: 600px) {
+    .about-inner {
+      grid-template-columns: 1fr;
+      justify-items: start;
+    }
+  }
+</style>

@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found">
+  <section class="section section-white">
+    <div class="container not-found">
+      <h1>Page not found</h1>
+      <p>The page you were looking for isn't here. It may have moved or been removed.</p>
+      <div class="actions">
+        <a class="btn" href="/">Go to the home page</a>
+        <a class="btn btn-ghost" href="/designs">See all designs</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .not-found {
+    max-width: 640px;
+    text-align: center;
+  }
+  h1 {
+    color: var(--royal);
+    font-size: clamp(2rem, 5vw, 2.8rem);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>

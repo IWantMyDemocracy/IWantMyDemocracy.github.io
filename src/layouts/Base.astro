@@ -1,0 +1,83 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { getCauses, settings } from '../lib/catalog';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Absolute or root-relative URL of the social preview picture (1200×630). */
+  ogImage?: string;
+  /** On the home page the small menu logo appears only after scrolling past the big one. */
+  home?: boolean;
+}
+
+const siteName = 'I Want My Democracy';
+const { title, description = settings.tagline, ogImage = '/og/default.png', home = false } = Astro.props;
+const fullTitle = title ? `${title} | ${siteName}` : `${siteName} | Pro-Democracy T-Shirts, Mugs, Stickers & More`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogUrl = new URL(ogImage, Astro.site);
+const causes = await getCauses();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0b1f4d" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={title ?? siteName} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title ?? siteName} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogUrl} />
+  </head>
+  <body class:list={{ 'is-home': home }}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {
+      settings.messageBar && (
+        <div class="message-bar" role="note">
+          <div class="container">
+            <span class="message-star" aria-hidden="true">★</span>
+            {settings.messageBar}
+            <span class="message-star" aria-hidden="true">★</span>
+          </div>
+        </div>
+      )
+    }
+    <Header causes={causes} home={home} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .message-bar {
+    background: var(--royal);
+    color: var(--white);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 0;
+  }
+  .message-star {
+    color: var(--sky-soft);
+    margin-inline: 0.5em;
+  }
+</style>

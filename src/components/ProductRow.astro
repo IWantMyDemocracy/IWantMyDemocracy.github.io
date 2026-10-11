@@ -1,0 +1,148 @@
+---
+import Icon from './Icon.astro';
+import { products, redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
+
+const hasTP = Boolean(settings.teepublicStore);
+const hasRB = Boolean(settings.redbubbleStore);
+---
+
+<ul class="product-row">
+  {
+    products.map((p) =>
+      hasTP && hasRB ? (
+        <li>
+          <details class="product" data-product>
+            <summary class="product-tile">
+              <span class="product-icon">
+                <Icon name={p.icon} size={34} />
+              </span>
+              <span class="product-name">{p.name}</span>
+            </summary>
+            <div class="product-choice">
+              <p>Shop {p.name.toLowerCase()} on:</p>
+              <a class="btn btn-sm" href={teepublicShopUrl(p.teepublic)} target="_blank" rel="noopener">
+                TeePublic <Icon name="external" class="ext" />
+              </a>
+              <a class="btn btn-sm" href={redbubbleShopUrl(p.redbubble)} target="_blank" rel="noopener">
+                Redbubble <Icon name="external" class="ext" />
+              </a>
+            </div>
+          </details>
+        </li>
+      ) : (
+        <li>
+          <a
+            class="product-tile"
+            href={hasTP ? teepublicShopUrl(p.teepublic) : redbubbleShopUrl(p.redbubble)}
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="product-icon">
+              <Icon name={p.icon} size={34} />
+            </span>
+            <span class="product-name">{p.name}</span>
+          </a>
+        </li>
+      )
+    )
+  }
+</ul>
+
+<script>
+  // Only one "which store?" choice open at a time.
+  const items = document.querySelectorAll<HTMLDetailsElement>('[data-product]');
+  items.forEach((d) =>
+    d.addEventListener('toggle', () => {
+      if (d.open) items.forEach((o) => o !== d && (o.open = false));
+    })
+  );
+  document.addEventListener('click', (e) => {
+    items.forEach((d) => {
+      if (d.open && !d.contains(e.target as Node)) d.open = false;
+    });
+  });
+</script>
+
+<style>
+  .product-row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  @media (max-width: 960px) {
+    .product-row {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 420px) {
+    .product-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .product {
+    position: relative;
+  }
+  .product-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 8px;
+    border-radius: var(--radius);
+    background: rgb(255 255 255 / 0.07);
+    border: 1px solid rgb(255 255 255 / 0.14);
+    color: var(--white);
+    text-decoration: none;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+  .product-tile::-webkit-details-marker {
+    display: none;
+  }
+  .product-tile:hover,
+  .product[open] .product-tile {
+    background: var(--royal);
+    color: var(--white);
+    transform: translateY(-2px);
+  }
+  .product-icon {
+    display: grid;
+    place-items: center;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--royal);
+  }
+  .product-name {
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+  .product-choice {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 230px;
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    background: var(--white);
+    color: var(--navy);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    border-top: 4px solid var(--red);
+  }
+  .product-choice p {
+    margin: 0 0 2px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+</style>

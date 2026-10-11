@@ -1,0 +1,98 @@
+---
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { Cause } from '../lib/catalog';
+
+interface Props {
+  cause: Cause;
+  count: number;
+  /** Shown when the cause has no cover picture of its own. */
+  fallbackImage?: ImageMetadata;
+}
+const { cause, count, fallbackImage } = Astro.props;
+const image = cause.cover ?? fallbackImage;
+---
+
+<a class="cause-tile" href={`/causes/${cause.id}`}>
+  <div class="cause-image">
+    {
+      image && (
+        <Picture
+          src={image}
+          alt=""
+          formats={['avif']}
+          fallbackFormat="webp"
+          widths={[280, 420, 560]}
+          sizes="(max-width: 600px) 46vw, 360px"
+        />
+      )
+    }
+  </div>
+  <div class="cause-label">
+    <span class="cause-name">{cause.name}</span>
+    <span class="cause-count">{count} {count === 1 ? 'design' : 'designs'}</span>
+  </div>
+</a>
+
+<style>
+  .cause-tile {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    background: var(--royal);
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .cause-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+  .cause-image {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: radial-gradient(circle at 50% 45%, var(--white) 0%, var(--tint) 80%);
+  }
+  .cause-image :global(img) {
+    position: absolute;
+    inset: 7%;
+    width: 86%;
+    height: 86%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+  .cause-tile:hover .cause-image :global(img) {
+    transform: scale(1.05);
+  }
+  .cause-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 16px;
+    color: var(--white);
+    border-top: 4px solid var(--red);
+  }
+  .cause-name {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+  .cause-count {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--sky-soft);
+    white-space: nowrap;
+  }
+  @media (max-width: 520px) {
+    .cause-label {
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 12px;
+    }
+    .cause-name {
+      font-size: 1rem;
+    }
+  }
+</style>

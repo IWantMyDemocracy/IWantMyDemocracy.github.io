@@ -1,0 +1,34 @@
+---
+// The address is put together in the browser so spam robots reading the page source don't find it.
+import Icon from './Icon.astro';
+import { settings } from '../lib/catalog';
+
+interface Props {
+  variant?: 'outline' | 'solid';
+}
+const { variant = 'solid' } = Astro.props;
+const [user, domain] = (settings.email || '').split('@');
+---
+
+{
+  user && domain && (
+    <a
+      class:list={['btn', variant === 'outline' ? 'btn-outline' : null]}
+      href="/about#contact"
+      data-email-user={user.split('').reverse().join('')}
+      data-email-domain={domain.split('').reverse().join('')}
+    >
+      <Icon name="email" size={20} />
+      Email us
+    </a>
+  )
+}
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('[data-email-user]').forEach((a) => {
+    const rev = (s = '') => s.split('').reverse().join('');
+    const address = `${rev(a.dataset.emailUser)}@${rev(a.dataset.emailDomain)}`;
+    a.href = `mailto:${address}`;
+    a.title = address;
+  });
+</script>

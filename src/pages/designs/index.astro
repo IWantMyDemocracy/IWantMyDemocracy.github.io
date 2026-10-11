@@ -1,0 +1,156 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import DesignCard from '../../components/DesignCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getCauses, getDesigns, designsInCause } from '../../lib/catalog';
+
+const designs = await getDesigns();
+const causes = (await getCauses()).filter((c) => designsInCause(designs, c).length > 0);
+---
+
+<Base title="All Designs" description="Browse every I Want My Democracy design, grouped by cause.">
+  <PageBanner
+    eyebrow="The full collection"
+    title="All Designs"
+    text="Pick a cause or search by name, then shop your favorite on TeePublic or Redbubble."
+  />
+
+  <section class="section section-tint">
+    <div class="container">
+      <div class="filters" data-filters>
+        <label class="search">
+          <Icon name="search" size={20} />
+          <span class="visually-hidden">Search designs</span>
+          <input type="search" placeholder="Search designs…" data-search autocomplete="off" />
+        </label>
+        <div class="filter-chips" role="group" aria-label="Filter by cause">
+          <button type="button" class="filter" aria-pressed="true" data-filter="">All</button>
+          {
+            causes.map((c) => (
+              <button type="button" class="filter" aria-pressed="false" data-filter={c.key} data-slug={c.id}>
+                {c.name}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <p class="count" role="status" aria-live="polite" data-count>{designs.length} designs</p>
+      <div class="design-grid" data-grid>
+        {designs.map((d, i) => <DesignCard design={d} eager={i < 4} />)}
+      </div>
+      <p class="empty" hidden data-empty>No designs match. Try a different word or cause.</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const search = document.querySelector<HTMLInputElement>('[data-search]');
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-grid] [data-card]')];
+  const count = document.querySelector<HTMLElement>('[data-count]');
+  const empty = document.querySelector<HTMLElement>('[data-empty]');
+  let cause = '';
+
+  function apply() {
+    const words = (search?.value ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const card of cards) {
+      const okCause = !cause || (card.dataset.causes ?? '').split(' ').includes(cause);
+      const okWords = words.every((w) => (card.dataset.title ?? '').includes(w));
+      const show = okCause && okWords;
+      card.hidden = !show;
+      if (show) shown++;
+    }
+    if (count) count.textContent = `${shown} ${shown === 1 ? 'design' : 'designs'}`;
+    if (empty) empty.hidden = shown > 0;
+  }
+
+  function choose(btn: HTMLButtonElement, updateUrl = true) {
+    cause = btn.dataset.filter ?? '';
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    if (updateUrl) {
+      const url = new URL(location.href);
+      if (btn.dataset.slug) url.searchParams.set('cause', btn.dataset.slug);
+      else url.searchParams.delete('cause');
+      history.replaceState(null, '', url);
+    }
+    apply();
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => choose(b)));
+  search?.addEventListener('input', apply);
+
+  // Support links like /designs?cause=vote
+  const wanted = new URLSearchParams(location.search).get('cause');
+  const start = buttons.find((b) => wanted && b.dataset.slug === wanted);
+  if (start) choose(start, false);
+</script>
+
+<style>
+  .filters {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 460px;
+    padding: 0 16px;
+    background: var(--white);
+    border: 2px solid var(--tint-2);
+    border-radius: 999px;
+    color: var(--ink-soft);
+  }
+  .search:focus-within {
+    border-color: var(--royal);
+  }
+  .search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    padding: 12px 0;
+    color: var(--ink);
+  }
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter {
+    font: 700 0.92rem/1 var(--font-body);
+    padding: 0.65em 1.05em;
+    border-radius: 999px;
+    border: 2px solid var(--tint-2);
+    background: var(--white);
+    color: var(--royal);
+    cursor: pointer;
+  }
+  .filter:hover {
+    border-color: var(--royal);
+  }
+  .filter[aria-pressed='true'] {
+    background: var(--royal);
+    border-color: var(--royal);
+    color: var(--white);
+  }
+  .count {
+    font-weight: 800;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .empty {
+    font-weight: 700;
+    color: var(--ink-soft);
+    padding: 24px 0;
+  }
+  :global([data-card][hidden]) {
+    display: none !important;
+  }
+</style>
