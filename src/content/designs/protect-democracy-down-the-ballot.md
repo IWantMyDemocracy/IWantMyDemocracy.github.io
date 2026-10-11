@@ -7,6 +7,7 @@ redbubbleUrl: "https://www.redbubble.com/shop/ap/164389660"
 teepublicUrl: "https://www.teepublic.com/t-shirt/64513326-protect-democracy-vote-democratic-down-the-ballot"
 description: ""
 featured: true
+position: 80
 hidden: false
 dateAdded: 2024-08-07
 ---

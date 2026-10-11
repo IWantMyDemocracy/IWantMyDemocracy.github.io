@@ -18,8 +18,42 @@ await mkdir(pub, { recursive: true });
 sharp.cache(false);
 sharp.concurrency(1);
 
+/**
+ * Marks every pixel that can't be reached from the image border without crossing the shape
+ * (the inside of letters like D, o and the loops of c) as solid, so those spaces show white
+ * instead of whatever colour is behind the logo.
+ */
+function fillEnclosed(mask, w, h) {
+  const outside = new Uint8Array(w * h);
+  const stack = [];
+  const visit = (i) => {
+    if (!outside[i] && mask[i] < 255) {
+      outside[i] = 1;
+      stack.push(i);
+    }
+  };
+  for (let x = 0; x < w; x++) visit(x), visit((h - 1) * w + x);
+  for (let y = 0; y < h; y++) visit(y * w), visit(y * w + w - 1);
+  while (stack.length) {
+    const i = stack.pop();
+    const x = i % w;
+    if (x > 0) visit(i - 1);
+    if (x < w - 1) visit(i + 1);
+    if (i >= w) visit(i - w);
+    if (i < w * (h - 1)) visit(i + w);
+  }
+  let filled = 0;
+  for (let i = 0; i < mask.length; i++) {
+    if (!outside[i] && mask[i] < 255) {
+      mask[i] = 255;
+      filled++;
+    }
+  }
+  return filled;
+}
+
 /** Adds a solid white outline around everything that isn't transparent. */
-async function withWhiteEdge(input, radius) {
+async function withWhiteEdge(input, radius, { fillHoles = false } = {}) {
   const { width, height } = await sharp(input).metadata();
   const pad = radius * 2;
   const padded = await sharp(input)
@@ -38,6 +72,7 @@ async function withWhiteEdge(input, radius) {
     const v = blurred[i];
     grown[i] = v >= 24 ? 255 : v <= 8 ? 0 : Math.round(((v - 8) / 16) * 255);
   }
+  if (fillHoles) console.log(`  filled ${fillEnclosed(grown, w, h)} enclosed pixels`);
   const white = await sharp({ create: { width: w, height: h, channels: 3, background: '#ffffff' } })
     .joinChannel(grown, { raw: { width: w, height: h, channels: 1 } })
     .png()
@@ -49,7 +84,7 @@ async function withWhiteEdge(input, radius) {
 // ---- Logo -------------------------------------------------------------
 const logo = await sharp(logoPath).trim().resize({ width: 2400 }).png().toBuffer();
 await sharp(logo).png({ compressionLevel: 9 }).toFile(new URL('logo.png', out).pathname.slice(1));
-await (await withWhiteEdge(logo, 18)).toFile(new URL('logo-on-blue.png', out).pathname.slice(1));
+await (await withWhiteEdge(logo, 18, { fillHoles: true })).toFile(new URL('logo-on-blue.png', out).pathname.slice(1));
 console.log('logo.png, logo-on-blue.png');
 
 // ---- Donkey -----------------------------------------------------------

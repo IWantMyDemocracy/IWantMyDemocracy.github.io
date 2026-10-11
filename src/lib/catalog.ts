@@ -61,6 +61,8 @@ export type Design = {
   teepublicUrl: string;
   description: string;
   featured: boolean;
+  /** Optional manual order: lower numbers show first; designs without one follow, newest first. */
+  position: number | null;
   dateAdded: Date | null;
 };
 
@@ -95,9 +97,15 @@ export async function getDesigns(): Promise<Design[]> {
       teepublicUrl: isUrl(data.teepublicUrl) ? data.teepublicUrl : '',
       description: data.description,
       featured: data.featured,
+      position: Number.isFinite(data.position) ? (data.position as number) : null,
       dateAdded: data.dateAdded ?? null,
     }))
-    .sort((a, b) => (b.dateAdded?.getTime() ?? 0) - (a.dateAdded?.getTime() ?? 0) || a.title.localeCompare(b.title));
+    .sort(
+      (a, b) =>
+        (a.position ?? Infinity) - (b.position ?? Infinity) ||
+        (b.dateAdded?.getTime() ?? 0) - (a.dateAdded?.getTime() ?? 0) ||
+        a.title.localeCompare(b.title)
+    );
 }
 
 export const designsInCause = (designs: Design[], cause: Cause) => designs.filter((d) => d.causeKeys.includes(cause.key));

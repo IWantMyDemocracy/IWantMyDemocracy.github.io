@@ -64,6 +64,10 @@ content:
       - name: featured
         label: Feature on the home page
         type: boolean
+      - name: position
+        label: Position (optional)
+        type: number
+        description: "Controls the order designs appear in. Lower numbers show first (10 before 20). Designs left empty come after, newest first. Tip: count by 10s so you can slip a design in between later (for example 15)."
       - name: hidden
         label: Hide from the website
         type: boolean

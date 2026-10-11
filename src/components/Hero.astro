@@ -39,7 +39,7 @@ import { redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
             </a>
           )
         }
-        <a class="btn btn-outline btn-lg" href="#causes">Browse designs ↓</a>
+        <a class="btn btn-outline btn-lg" href="#causes">Browse Designs ↓</a>
       </div>
     </div>
   </div>
@@ -114,7 +114,12 @@ import { redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 14px;
+  }
+  .hero-actions .btn {
+    font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+    padding: 0.85em 1.5em;
+    white-space: nowrap;
   }
   .hero-wave {
     position: absolute;
@@ -124,19 +129,18 @@ import { redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
     height: clamp(44px, 6vw, 90px);
   }
 
+  /* Both animations start and end at the normal pose, so the logo and donkey are always fully
+     visible, even where animations don't run. */
   @keyframes logo-in {
     from {
-      opacity: 0;
-      transform: translateY(14px) scale(0.98);
+      transform: scale(0.97);
     }
   }
   @keyframes kick {
     0% {
-      opacity: 0;
-      transform: translateY(40px) rotate(-10deg);
+      transform: none;
     }
     35% {
-      opacity: 1;
       transform: translateY(-16px) rotate(7deg);
     }
     55% {
@@ -162,14 +166,34 @@ import { redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
       width: clamp(84px, 24vw, 150px);
     }
     .hero-actions .btn {
-      font-size: 1rem;
-      padding: 0.8em 1.2em;
+      font-size: 1.15rem;
+      padding: 0.8em 1.3em;
     }
   }
-  @media (max-width: 480px) {
+  /* Phones: logo on top, tagline with the donkey beside it, then full-width buttons. */
+  @media (max-width: 600px) {
+    .hero-inner {
+      grid-template-areas:
+        'logo logo'
+        'tagline donkey'
+        'actions actions';
+      align-items: center;
+    }
+    .hero-copy {
+      display: contents;
+    }
+    .hero-tagline {
+      grid-area: tagline;
+      margin: 16px 0 0;
+    }
+    .hero-donkey {
+      align-self: center;
+    }
     .hero-actions {
+      grid-area: actions;
       flex-direction: column;
       align-items: stretch;
+      margin-top: 20px;
     }
   }
 </style>

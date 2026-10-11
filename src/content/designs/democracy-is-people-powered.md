@@ -7,6 +7,7 @@ redbubbleUrl: "https://www.redbubble.com/shop/ap/164125671"
 teepublicUrl: "https://www.teepublic.com/t-shirt/64465833-democracy-is-people-powered-vote"
 description: ""
 featured: false
+position: 60
 hidden: false
 dateAdded: 2024-07-15
 ---

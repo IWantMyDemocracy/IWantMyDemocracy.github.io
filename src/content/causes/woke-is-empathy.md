@@ -1,5 +1,5 @@
 ---
-name: "WOKE & Empathy"
+name: "WOKE is Empathy"
 description: "Caring about others, having empathy, and liberty for all. That is patriotic."
 order: 6
 redbubbleCollection: "https://www.redbubble.com/people/fauberdesign/shop?asc=u&collections=4254682"

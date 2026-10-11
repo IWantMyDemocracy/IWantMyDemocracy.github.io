@@ -34,6 +34,7 @@ const designs = defineCollection({
     description: text,
     featured: flag,
     hidden: flag,
+    position: z.coerce.number().nullish(),
     dateAdded: z.coerce.date().nullish(),
   }),
 });
