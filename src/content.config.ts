@@ -36,6 +36,17 @@ const designs = defineCollection({
     hidden: flag,
     position: z.coerce.number().nullish(),
     dateAdded: z.coerce.date().nullish(),
+    colorways: z
+      .array(
+        z.object({
+          name: text,
+          image: text,
+          redbubbleUrl: text,
+          teepublicUrl: text,
+        })
+      )
+      .nullish()
+      .transform((v) => v ?? []),
   }),
 });
 

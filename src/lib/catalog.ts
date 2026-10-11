@@ -51,6 +51,13 @@ export type Cause = {
   teepublicAlbum: string;
 };
 
+export type Colorway = {
+  name: string;
+  image: ImageMetadata;
+  redbubbleUrl: string;
+  teepublicUrl: string;
+};
+
 export type Design = {
   id: string;
   title: string;
@@ -64,6 +71,8 @@ export type Design = {
   /** Optional manual order: lower numbers show first; designs without one follow, newest first. */
   position: number | null;
   dateAdded: Date | null;
+  /** Colour choices; the first is usually the main picture. Empty for single-colour designs. */
+  colorways: Colorway[];
 };
 
 const isUrl = (s: string) => /^https?:\/\//i.test(s);
@@ -99,6 +108,14 @@ export async function getDesigns(): Promise<Design[]> {
       featured: data.featured,
       position: Number.isFinite(data.position) ? (data.position as number) : null,
       dateAdded: data.dateAdded ?? null,
+      colorways: data.colorways
+        .filter((c) => c.name && c.image)
+        .map((c) => ({
+          name: c.name,
+          image: imageFor(c.image),
+          redbubbleUrl: isUrl(c.redbubbleUrl) ? c.redbubbleUrl : '',
+          teepublicUrl: isUrl(c.teepublicUrl) ? c.teepublicUrl : '',
+        })),
     }))
     .sort(
       (a, b) =>
@@ -111,11 +128,16 @@ export async function getDesigns(): Promise<Design[]> {
 export const designsInCause = (designs: Design[], cause: Cause) => designs.filter((d) => d.causeKeys.includes(cause.key));
 export const causesOf = (design: Design, causes: Cause[]) => causes.filter((c) => design.causeKeys.includes(c.key));
 
-/** Store buttons only appear when both the store and the design have a link. */
-export function storeLinks(d: Design) {
+/**
+ * Store buttons only appear when both the store and the design have a link. A colour without
+ * its own link uses the design's main link.
+ */
+export function storeLinks(d: Design, colorway?: Colorway) {
+  const teepublic = colorway?.teepublicUrl || d.teepublicUrl;
+  const redbubble = colorway?.redbubbleUrl || d.redbubbleUrl;
   return {
-    teepublic: settings.teepublicStore && d.teepublicUrl ? d.teepublicUrl : '',
-    redbubble: settings.redbubbleStore && d.redbubbleUrl ? d.redbubbleUrl : '',
+    teepublic: settings.teepublicStore && teepublic ? teepublic : '',
+    redbubble: settings.redbubbleStore && redbubble ? redbubble : '',
   };
 }
 

@@ -31,6 +31,7 @@ const href = `/designs/${design.id}`;
       loading={eager ? 'eager' : 'lazy'}
     />
     <span class="badge-new" hidden data-new-badge>New</span>
+    {design.colorways.length > 1 && <span class="badge-colors">{design.colorways.length} colors</span>}
   </a>
   <div class="card-body">
     <h3 class="card-title"><a href={href}>{design.title}</a></h3>
@@ -100,6 +101,17 @@ const href = `/designs/${design.id}`;
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 999px;
+  }
+  .badge-colors {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--royal);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 800;
     padding: 4px 9px;
     border-radius: 999px;
   }

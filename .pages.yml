@@ -78,6 +78,29 @@ content:
         description: Designs added in the last 30 days get a "New" badge.
         options:
           format: yyyy-MM-dd
+      - name: colorways
+        label: Colors (optional)
+        type: object
+        list: true
+        description: "For designs that come in several colors. Add one entry per color: the first should match the main picture. Visitors pick a color on the design's page and the shop buttons go to that color's listing."
+        fields:
+          - name: name
+            label: Color name
+            type: string
+            description: For example "Lime green" or "Yellow & purple".
+          - name: image
+            label: Picture of this color
+            type: image
+            options:
+              media: designs
+          - name: teepublicUrl
+            label: TeePublic link for this color (optional)
+            type: string
+            description: Leave empty to use the design's main TeePublic link.
+          - name: redbubbleUrl
+            label: Redbubble link for this color (optional)
+            type: string
+            description: Leave empty to use the design's main Redbubble link.
 
   - name: causes
     label: Causes

@@ -1,5 +1,5 @@
 ---
-import { Picture } from 'astro:assets';
+import { Image, Picture } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import DesignCard from '../../components/DesignCard.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
@@ -15,8 +15,16 @@ const { design } = Astro.props as { design: Design };
 const allCauses = await getCauses();
 const designs = await getDesigns();
 const causes = causesOf(design, allCauses);
-const links = storeLinks(design);
 const pageUrl = new URL(`/designs/${design.id}`, Astro.site).toString();
+
+// One "view" per colour (or just the main picture). Picking a colour swaps the picture and
+// points the shop buttons at that colour's listing.
+const hasColors = design.colorways.length > 1;
+const colorSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const views = hasColors
+  ? design.colorways.map((c) => ({ name: c.name, slug: colorSlug(c.name), image: c.image, links: storeLinks(design, c) }))
+  : [{ name: '', slug: '', image: design.image, links: storeLinks(design) }];
+const links = views[0].links;
 
 // "More from this cause": same causes first, then other designs, never this one.
 const related = [
@@ -44,16 +52,22 @@ const description =
       </nav>
 
       <div class="design-image">
-        <Picture
-          src={design.image}
-          alt={design.title}
-          formats={['avif']}
-          fallbackFormat="webp"
-          widths={[400, 640, 900, 1200]}
-          sizes="(max-width: 860px) 92vw, 560px"
-          loading="eager"
-          fetchpriority="high"
-        />
+        {
+          views.map((v, i) => (
+            <div class="design-view" data-color-view={i} hidden={i > 0}>
+              <Picture
+                src={v.image}
+                alt={v.name ? `${design.title}, ${v.name}` : design.title}
+                formats={['avif']}
+                fallbackFormat="webp"
+                widths={[400, 640, 900, 1200]}
+                sizes="(max-width: 860px) 92vw, 560px"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : 'auto'}
+              />
+            </div>
+          ))
+        }
       </div>
 
       <div class="design-info">
@@ -78,15 +92,45 @@ const description =
         </p>
 
         {
+          hasColors && (
+            <div class="colors">
+              <p class="colors-label">
+                Color: <strong data-color-name>{views[0].name}</strong>
+                <span class="colors-count">({views.length} colors)</span>
+              </p>
+              <div class="swatches" role="radiogroup" aria-label="Choose a color">
+                {views.map((v, i) => (
+                  <button
+                    type="button"
+                    class="swatch"
+                    role="radio"
+                    aria-checked={i === 0 ? 'true' : 'false'}
+                    aria-label={v.name}
+                    title={v.name}
+                    data-swatch={i}
+                    data-name={v.name}
+                    data-slug={v.slug}
+                    data-teepublic={v.links.teepublic}
+                    data-redbubble={v.links.redbubble}
+                  >
+                    <Image src={v.image} alt="" width={120} loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        }
+
+        {
           (links.teepublic || links.redbubble) && (
             <div class="design-buy">
               {links.teepublic && (
-                <a class="btn btn-lg" href={links.teepublic} target="_blank" rel="noopener">
+                <a class="btn btn-lg" href={links.teepublic} target="_blank" rel="noopener" data-buy="teepublic">
                   Shop on TeePublic <Icon name="external" class="ext" />
                 </a>
               )}
               {links.redbubble && (
-                <a class="btn btn-lg" href={links.redbubble} target="_blank" rel="noopener">
+                <a class="btn btn-lg" href={links.redbubble} target="_blank" rel="noopener" data-buy="redbubble">
                   Shop on Redbubble <Icon name="external" class="ext" />
                 </a>
               )}
@@ -125,6 +169,50 @@ const description =
   }
 </Base>
 
+<script>
+  const swatches = [...document.querySelectorAll<HTMLButtonElement>('[data-swatch]')];
+  const views = [...document.querySelectorAll<HTMLElement>('[data-color-view]')];
+  const nameEl = document.querySelector<HTMLElement>('[data-color-name]');
+  const buy = {
+    teepublic: document.querySelector<HTMLAnchorElement>('[data-buy="teepublic"]'),
+    redbubble: document.querySelector<HTMLAnchorElement>('[data-buy="redbubble"]'),
+  };
+
+  function choose(btn: HTMLButtonElement, updateUrl = true) {
+    const index = btn.dataset.swatch;
+    swatches.forEach((s) => s.setAttribute('aria-checked', String(s === btn)));
+    views.forEach((v) => (v.hidden = v.dataset.colorView !== index));
+    if (nameEl) nameEl.textContent = btn.dataset.name ?? '';
+    if (buy.teepublic && btn.dataset.teepublic) buy.teepublic.href = btn.dataset.teepublic;
+    if (buy.redbubble && btn.dataset.redbubble) buy.redbubble.href = btn.dataset.redbubble;
+    if (updateUrl) {
+      const url = new URL(location.href);
+      if (index === '0') url.searchParams.delete('color');
+      else url.searchParams.set('color', btn.dataset.slug ?? '');
+      history.replaceState(null, '', url);
+    }
+  }
+
+  swatches.forEach((btn) => btn.addEventListener('click', () => choose(btn)));
+
+  // Arrow keys move between colours, like other radio buttons.
+  swatches.forEach((btn, i) =>
+    btn.addEventListener('keydown', (e) => {
+      const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+      if (!step) return;
+      e.preventDefault();
+      const next = swatches[(i + step + swatches.length) % swatches.length];
+      next.focus();
+      choose(next);
+    })
+  );
+
+  // Links like /designs/fight-fascism?color=lime-green open on that colour.
+  const wanted = new URLSearchParams(location.search).get('color');
+  const start = swatches.find((s) => wanted && s.dataset.slug === wanted);
+  if (start) choose(start, false);
+</script>
+
 <style>
   .design-hero {
     background: linear-gradient(180deg, var(--tint) 0%, var(--white) 70%);
@@ -162,6 +250,9 @@ const description =
     box-shadow: var(--shadow-lg);
     border: 6px solid var(--white);
   }
+  .design-view[hidden] {
+    display: none;
+  }
   .design-image :global(img) {
     position: absolute;
     inset: 7%;
@@ -196,6 +287,47 @@ const description =
   .design-products {
     color: var(--ink-soft);
     margin: 0;
+  }
+  .colors-label {
+    margin: 0 0 10px;
+    font-weight: 700;
+  }
+  .colors-label strong {
+    color: var(--royal);
+  }
+  .colors-count {
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .swatch {
+    width: 64px;
+    height: 64px;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--tint-2);
+    background: var(--tint);
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .swatch:hover {
+    border-color: var(--royal);
+    transform: translateY(-1px);
+  }
+  .swatch[aria-checked='true'] {
+    border-color: var(--royal);
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--royal);
+    background: var(--white);
+  }
+  .swatch :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
   .design-buy {
     display: flex;
