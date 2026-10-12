@@ -81,8 +81,11 @@ content:
       - name: colorways
         label: Colors (optional)
         type: object
-        list: true
-        description: "For designs that come in several colors. Add one entry per color: the first should match the main picture. Visitors pick a color on the design's page and the shop buttons go to that color's listing."
+        list:
+          collapsible:
+            collapsed: true
+            summary: "{name}"
+        description: "For designs that come in several colors. Add one entry per color, only for colors listed in a store; the first should match the main picture. Visitors pick a color on the design's page and each shop button goes to that color's listing (a store's button is hidden for colors it doesn't sell)."
         fields:
           - name: name
             label: Color name
@@ -94,13 +97,13 @@ content:
             options:
               media: designs
           - name: teepublicUrl
-            label: TeePublic link for this color (optional)
+            label: TeePublic link for this color
             type: string
-            description: Leave empty to use the design's main TeePublic link.
+            description: Leave empty if TeePublic doesn't sell this color.
           - name: redbubbleUrl
-            label: Redbubble link for this color (optional)
+            label: Redbubble link for this color
             type: string
-            description: Leave empty to use the design's main Redbubble link.
+            description: Leave empty if Redbubble doesn't sell this color.
 
   - name: causes
     label: Causes

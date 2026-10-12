@@ -5,14 +5,35 @@ import { z } from 'astro/zod';
 // Fields written by the online editor (Pages CMS) can come back empty or missing,
 // so every optional value is forgiving here and cleaned up in src/lib/catalog.ts.
 const text = z.string().nullish().transform((v) => (v ?? '').trim());
-const flag = z.boolean().nullish().transform((v) => v ?? false);
+const flag = z
+  .union([z.boolean(), z.string()])
+  .nullish()
+  .transform((v) => v === true || v === 'true');
+/** A number, or null when the box was left empty. */
+const optionalNumber = z
+  .union([z.number(), z.string()])
+  .nullish()
+  .transform((v) => {
+    if (v == null || String(v).trim() === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  });
+/** A date, or null when the box was left empty or isn't a date. */
+const optionalDate = z
+  .union([z.date(), z.string()])
+  .nullish()
+  .transform((v) => {
+    if (v == null || String(v).trim() === '') return null;
+    const d = v instanceof Date ? v : new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  });
 
 const causes = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/causes' }),
   schema: z.object({
     name: z.string(),
     description: text,
-    order: z.coerce.number().nullish().transform((v) => v ?? 100),
+    order: optionalNumber.transform((v) => v ?? 100),
     cover: text,
     redbubbleCollection: text,
     teepublicAlbum: text,
@@ -34,8 +55,8 @@ const designs = defineCollection({
     description: text,
     featured: flag,
     hidden: flag,
-    position: z.coerce.number().nullish(),
-    dateAdded: z.coerce.date().nullish(),
+    position: optionalNumber,
+    dateAdded: optionalDate,
     colorways: z
       .array(
         z.object({

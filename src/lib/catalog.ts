@@ -106,7 +106,7 @@ export async function getDesigns(): Promise<Design[]> {
       teepublicUrl: isUrl(data.teepublicUrl) ? data.teepublicUrl : '',
       description: data.description,
       featured: data.featured,
-      position: Number.isFinite(data.position) ? (data.position as number) : null,
+      position: data.position,
       dateAdded: data.dateAdded ?? null,
       colorways: data.colorways
         .filter((c) => c.name && c.image)
