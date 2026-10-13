@@ -15,6 +15,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const GET: APIRoute = async ({ props }) => {
-  const png = props.isDefault ? await defaultOgImage() : await designOgImage(props.file);
-  return new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
+  const jpg = props.isDefault ? await defaultOgImage() : await designOgImage(props.file);
+  return new Response(new Uint8Array(jpg), { headers: { 'Content-Type': 'image/jpeg' } });
 };

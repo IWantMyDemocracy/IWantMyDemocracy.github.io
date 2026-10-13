@@ -9,8 +9,9 @@ interface Props {
   home?: boolean;
 }
 const { causes, home = false } = Astro.props;
-const path = Astro.url.pathname.replace(/\/$/, '');
-const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);
+const trim = (p: string) => p.replace(/\/+$/, '');
+const path = trim(Astro.url.pathname);
+const current = (href: string) => (path === trim(href) || path.startsWith(trim(href) + '/') ? 'page' : undefined);
 ---
 
 <header class:list={['site-header', { 'logo-hidden': home }]} data-header>
@@ -34,7 +35,7 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
               {
                 causes.map((c) => (
                   <li>
-                    <a href={`/causes/${c.id}`} aria-current={current(`/causes/${c.id}`)}>
+                    <a href={`/causes/${c.id}/`} aria-current={current(`/causes/${c.id}/`)}>
                       {c.name}
                     </a>
                   </li>
@@ -43,9 +44,9 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
             </ul>
           </details>
         </li>
-        <li class="nav-item"><a class="nav-link" href="/designs" aria-current={current('/designs')}>All Designs</a></li>
+        <li class="nav-item"><a class="nav-link" href="/designs/" aria-current={current('/designs')}>All Designs</a></li>
         <li class="nav-item"><a class="nav-link" href="/#products">Shop by Product</a></li>
-        <li class="nav-item"><a class="nav-link" href="/about" aria-current={current('/about')}>About</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about/" aria-current={current('/about')}>About</a></li>
       </ul>
     </nav>
   </div>
@@ -57,21 +58,44 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const nav = document.querySelector<HTMLElement>('[data-nav]');
 
-  toggle?.addEventListener('click', () => {
-    const open = toggle.getAttribute('aria-expanded') !== 'true';
-    toggle.setAttribute('aria-expanded', String(open));
+  const setMenu = (open: boolean) => {
+    toggle?.setAttribute('aria-expanded', String(open));
     nav?.classList.toggle('open', open);
-  });
+  };
+  toggle?.addEventListener('click', () => setMenu(toggle.getAttribute('aria-expanded') !== 'true'));
 
-  // Close the cause dropdown when clicking elsewhere or pressing Escape.
   const dropdowns = document.querySelectorAll<HTMLDetailsElement>('[data-dropdown]');
+
+  // Following a menu link closes the phone menu and the cause dropdown, so a jump within the
+  // page (Shop by Product) isn't hidden behind the open menu.
+  nav?.querySelectorAll('a').forEach((a) =>
+    a.addEventListener('click', () => {
+      setMenu(false);
+      dropdowns.forEach((d) => (d.open = false));
+    })
+  );
+
+  // Close the cause dropdown when clicking elsewhere.
   document.addEventListener('click', (e) => {
     dropdowns.forEach((d) => {
       if (d.open && !d.contains(e.target as Node)) d.open = false;
     });
   });
+
+  // Escape closes the dropdown (or the phone menu) and puts keyboard focus back on its button.
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') dropdowns.forEach((d) => (d.open = false));
+    if (e.key !== 'Escape') return;
+    const openDropdown = [...dropdowns].find((d) => d.open);
+    if (openDropdown) {
+      const hadFocus = openDropdown.contains(document.activeElement);
+      openDropdown.open = false;
+      if (hadFocus) openDropdown.querySelector<HTMLElement>('summary')?.focus();
+      return;
+    }
+    if (toggle?.getAttribute('aria-expanded') === 'true') {
+      setMenu(false);
+      toggle.focus();
+    }
   });
 
   // Home page: show the small logo once the big one has scrolled away.
@@ -102,16 +126,19 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
   }
   .header-logo {
     flex: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0s;
   }
   .header-logo img {
     width: 150px;
     height: auto;
   }
+  /* Hidden logo is also skipped by the Tab key (visibility switches off after the fade). */
   .logo-hidden .header-logo {
     opacity: 0;
     transform: translateY(-6px);
     pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
   }
 
   .menu-toggle {
@@ -219,6 +246,7 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
       opacity: 1;
       transform: none;
       pointer-events: auto;
+      visibility: visible;
     }
   }
 </style>

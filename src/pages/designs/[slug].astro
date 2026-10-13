@@ -15,7 +15,7 @@ const { design } = Astro.props as { design: Design };
 const allCauses = await getCauses();
 const designs = await getDesigns();
 const causes = causesOf(design, allCauses);
-const pageUrl = new URL(`/designs/${design.id}`, Astro.site).toString();
+const pageUrl = new URL(`/designs/${design.id}/`, Astro.site).toString();
 
 // One "view" per colour (or just the main picture). Picking a colour swaps the picture and
 // points the shop buttons at that colour's listing; a store's button is hidden for colours
@@ -47,18 +47,36 @@ const related = [
 const description =
   design.description ||
   `"${design.title}" by I Want My Democracy. Available on T-shirts, hoodies, hats, mugs, stickers and more.`;
+
+// Tells search engines where this page sits: Home › Cause › Design.
+const crumbs = [
+  { name: 'Home', url: new URL('/', Astro.site).toString() },
+  ...(causes[0] ? [{ name: causes[0].name, url: new URL(`/causes/${causes[0].id}/`, Astro.site).toString() }] : []),
+  { name: design.title, url: pageUrl },
+];
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.url })),
+};
 ---
 
-<Base title={design.title} description={description} ogImage={`/og/${design.id}.png`}>
+<Base
+  title={design.title}
+  description={description}
+  ogImage={`/og/${design.id}.jpg`}
+  ogImageAlt={`The "${design.title}" design beside the I Want My Democracy logo`}
+  jsonLd={[breadcrumbLd]}
+>
   <section class="design-hero">
     <div class="container design-layout">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href="/designs">All designs</a>
+        <a href="/designs/">All designs</a>
         {
           causes[0] && (
             <>
               <span aria-hidden="true">/</span>
-              <a href={`/causes/${causes[0].id}`}>{causes[0].name}</a>
+              <a href={`/causes/${causes[0].id}/`}>{causes[0].name}</a>
             </>
           )
         }
@@ -89,7 +107,7 @@ const description =
             <ul class="design-causes">
               {causes.map((c) => (
                 <li>
-                  <a class="chip" href={`/causes/${c.id}`}>
+                  <a class="chip" href={`/causes/${c.id}/`}>
                     {c.name}
                   </a>
                 </li>
@@ -99,10 +117,6 @@ const description =
         }
         <h1>{design.title}</h1>
         {design.description && <p class="design-desc">{design.description}</p>}
-        <p class="design-products">
-          Available on T-shirts, hoodies, hats, mugs, pillows, phone cases, stickers, magnets and more. Choose your
-          product, size and color on the store.
-        </p>
 
         {
           hasColors && (
@@ -165,6 +179,11 @@ const description =
           )
         }
 
+        <p class="design-products">
+          Available on T-shirts, hoodies, hats, mugs, pillows, phone cases, stickers, magnets and more. Choose your
+          product, size and color on the store.
+        </p>
+
         <ShareButtons url={pageUrl} title={design.title} />
       </div>
     </div>
@@ -180,7 +199,7 @@ const description =
               <h2>{causes[0] ? `More from ${causes[0].name}` : 'More designs'}</h2>
             </div>
             {causes[0] && (
-              <a class="link-arrow" href={`/causes/${causes[0].id}`}>
+              <a class="link-arrow" href={`/causes/${causes[0].id}/`}>
                 See all
               </a>
             )}
@@ -383,6 +402,29 @@ const description =
     .design-layout {
       grid-template-columns: 1fr;
       grid-template-areas: 'crumbs' 'image' 'info';
+      row-gap: 14px;
+    }
+    /* Phones: a slightly smaller picture and the shop buttons right under the name, so they
+       show on the first screen; the color choices follow (picking one updates the buttons). */
+    .design-image {
+      width: min(100%, 76vw);
+      justify-self: center;
+    }
+    .design-info {
+      gap: 14px;
+    }
+    .design-buy {
+      order: 1;
+      padding: 12px 0;
+    }
+    .colors {
+      order: 2;
+    }
+    .design-products {
+      order: 3;
+    }
+    .design-info :global(.share) {
+      order: 4;
     }
     .design-buy .btn {
       flex: 1 1 100%;

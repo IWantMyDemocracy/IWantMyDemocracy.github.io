@@ -51,3 +51,5 @@ const { name, size = 24, class: className, label } = Astro.props;
 >
   <path d={paths[name]}></path>
 </svg>
+{/* The "external" arrow marks links that open a new tab; say so for screen readers too. */}
+{name === 'external' && <span class="visually-hidden"> (opens in new tab)</span>}

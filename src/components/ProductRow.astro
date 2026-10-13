@@ -41,6 +41,7 @@ const hasRB = Boolean(settings.redbubbleStore);
               <Icon name={p.icon} size={34} />
             </span>
             <span class="product-name">{p.name}</span>
+            <span class="visually-hidden"> (opens in new tab)</span>
           </a>
         </li>
       )
@@ -59,6 +60,16 @@ const hasRB = Boolean(settings.redbubbleStore);
   document.addEventListener('click', (e) => {
     items.forEach((d) => {
       if (d.open && !d.contains(e.target as Node)) d.open = false;
+    });
+  });
+  // Escape closes an open choice and puts keyboard focus back on its product.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    items.forEach((d) => {
+      if (!d.open) return;
+      const hadFocus = d.contains(document.activeElement);
+      d.open = false;
+      if (hadFocus) d.querySelector<HTMLElement>('summary')?.focus();
     });
   });
 </script>

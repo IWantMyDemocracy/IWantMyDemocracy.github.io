@@ -45,8 +45,8 @@ import { redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
   </div>
 
   <svg class="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0 52 C 240 92, 480 92, 720 60 S 1200 8, 1440 40 L1440 90 L0 90 Z" fill="#ffffff"></path>
-    <path d="M0 52 C 240 92, 480 92, 720 60 S 1200 8, 1440 40" fill="none" stroke="#d62839" stroke-width="5"></path>
+    <path d="M0 52 C 240 92, 480 92, 720 60 S 1200 8, 1440 40 L1440 90 L0 90 Z" class="wave-fill"></path>
+    <path d="M0 52 C 240 92, 480 92, 720 60 S 1200 8, 1440 40" class="wave-line" stroke-width="5"></path>
   </svg>
 </section>
 
@@ -56,7 +56,7 @@ import { redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
     overflow: hidden;
     color: var(--white);
     background:
-      radial-gradient(120% 90% at 50% 0%, #3a74f0 0%, #1d47cf 38%, #12308f 70%, var(--navy) 100%);
+      radial-gradient(120% 90% at 50% 0%, var(--hero-top) 0%, var(--hero-mid) 38%, var(--hero-deep) 70%, var(--navy) 100%);
   }
   .hero-stars {
     position: absolute;
@@ -127,6 +127,13 @@ import { redbubbleShopUrl, teepublicShopUrl, settings } from '../lib/catalog';
     bottom: -1px;
     width: 100%;
     height: clamp(44px, 6vw, 90px);
+  }
+  .wave-fill {
+    fill: var(--white);
+  }
+  .wave-line {
+    fill: none;
+    stroke: var(--red);
   }
 
   /* Both animations start and end at the normal pose, so the logo and donkey are always fully

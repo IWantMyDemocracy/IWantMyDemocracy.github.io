@@ -25,7 +25,7 @@ const links = [
     {
       links.map((l) => (
         <li>
-          <a class="share-btn" href={l.href} target="_blank" rel="noopener" aria-label={`Share on ${l.name}`}>
+          <a class="share-btn" href={l.href} target="_blank" rel="noopener" aria-label={`Share on ${l.name} (opens in new tab)`}>
             <Icon name={l.icon} size={20} />
             <span>{l.name}</span>
           </a>
@@ -64,17 +64,12 @@ const links = [
     };
 
     const copy = async () => {
+      // Where copying isn't allowed, the link is shown instead so it can be copied by hand.
       try {
         await navigator.clipboard.writeText(url);
         return true;
       } catch {
-        const input = document.createElement('input');
-        input.value = url;
-        document.body.append(input);
-        input.select();
-        const ok = document.execCommand('copy');
-        input.remove();
-        return ok;
+        return false;
       }
     };
 

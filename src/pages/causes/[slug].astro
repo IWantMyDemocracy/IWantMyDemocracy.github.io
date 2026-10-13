@@ -15,12 +15,24 @@ const causes = await getCauses();
 const designs = designsInCause(await getDesigns(), cause);
 const others = causes.filter((c) => c.id !== cause.id);
 const first = designs.find((d) => d.featured) ?? designs[0];
+
+// Tells search engines where this page sits: Home › Cause.
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).toString() },
+    { '@type': 'ListItem', position: 2, name: cause.name, item: new URL(`/causes/${cause.id}/`, Astro.site).toString() },
+  ],
+};
 ---
 
 <Base
   title={`${cause.name} T-Shirts & Gifts`}
   description={cause.description || `${cause.name} designs on T-shirts, hoodies, mugs, stickers and more.`}
-  ogImage={first ? `/og/${first.id}.png` : undefined}
+  ogImage={first ? `/og/${first.id}.jpg` : undefined}
+  ogImageAlt={first ? `The "${first.title}" design beside the I Want My Democracy logo` : undefined}
+  jsonLd={[breadcrumbLd]}
 >
   <PageBanner eyebrow="Shop by cause" title={cause.name} text={cause.description}>
     {
@@ -48,7 +60,7 @@ const first = designs.find((d) => d.featured) ?? designs[0];
         designs.length > 0 ? (
           <div class="design-grid">
             {designs.map((d, i) => (
-              <DesignCard design={d} eager={i < 4} />
+              <DesignCard design={d} eager={i < 4} headingLevel={2} />
             ))}
           </div>
         ) : (
@@ -62,8 +74,8 @@ const first = designs.find((d) => d.featured) ?? designs[0];
     <div class="container">
       <h2 class="more-title">More causes</h2>
       <ul class="cause-chips">
-        {others.map((c) => <li><a class="chip" href={`/causes/${c.id}`}>{c.name}</a></li>)}
-        <li><a class="chip chip-all" href="/designs">All designs</a></li>
+        {others.map((c) => <li><a class="chip" href={`/causes/${c.id}/`}>{c.name}</a></li>)}
+        <li><a class="chip chip-all" href="/designs/">All designs</a></li>
       </ul>
     </div>
   </section>

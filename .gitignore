@@ -4,6 +4,7 @@ dist/
 .DS_Store
 Thumbs.db
 *.log
-# Local review file made by scripts/seed/seed.mjs
+# Local review files
 design-checklist.html
 review/
+.claude/

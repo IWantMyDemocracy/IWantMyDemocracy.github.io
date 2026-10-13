@@ -14,7 +14,7 @@ const [user, domain] = (settings.email || '').split('@');
   user && domain && (
     <a
       class:list={['btn', variant === 'outline' ? 'btn-outline' : null]}
-      href="/about#contact"
+      href="/about/#contact"
       data-email-user={user.split('').reverse().join('')}
       data-email-domain={domain.split('').reverse().join('')}
     >

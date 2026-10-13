@@ -161,6 +161,13 @@ content:
         label: Message bar
         type: string
         description: Short message in the blue bar at the very top of every page. Leave empty to hide the bar.
+      - name: messageBarUntil
+        label: Hide message bar after (optional)
+        type: date
+        default: ""
+        description: The bar disappears by itself after this day, e.g. the day of an election. Leave empty to keep it showing.
+        options:
+          format: yyyy-MM-dd
       - name: tagline
         label: Tagline
         type: text

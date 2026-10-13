@@ -22,7 +22,7 @@ const { eyebrow, title, text } = Astro.props;
   .page-banner {
     position: relative;
     color: var(--white);
-    background: radial-gradient(120% 140% at 15% 0%, #2f63e6 0%, #1838c8 40%, var(--navy) 100%);
+    background: radial-gradient(120% 140% at 15% 0%, var(--banner-top) 0%, var(--royal) 40%, var(--navy) 100%);
     padding-block: clamp(36px, 6vw, 64px);
     border-bottom: 5px solid var(--red);
   }
@@ -35,7 +35,7 @@ const { eyebrow, title, text } = Astro.props;
   }
   p {
     font-size: clamp(1.05rem, 2vw, 1.25rem);
-    color: #dbe9ff;
+    color: var(--on-blue-soft);
     max-width: 60ch;
     margin: 0;
   }

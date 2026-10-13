@@ -14,8 +14,26 @@
   --tint-2: #d7e7fa;
   --white: #ffffff;
   --red: #d62839;
+  /* Slightly deeper red for small red words, so they stay readable on light blue. */
+  --red-text: #c21f30;
   --ink: #0b1f4d;
   --ink-soft: #3b4f7d;
+  /* Borders of boxes people type in: dark enough to see (3:1 against white). */
+  --line-strong: #7d8fb8;
+  --on-blue-soft: #dbe9ff;
+
+  /* The big blue background of the logo banner and page banners. */
+  --hero-top: #3a74f0;
+  --hero-mid: #1d47cf;
+  --hero-deep: #12308f;
+  --banner-top: #2f63e6;
+
+  /* Keyboard focus ring: navy with a white gap on light areas (swapped on dark ones below). */
+  --focus: var(--navy);
+  --focus-gap: var(--white);
+
+  /* Height of the sticky menu, so jumps to a section stop below it. */
+  --header-height: 76px;
 
   --font-body: 'Public Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Alfa Slab One', Georgia, serif;
@@ -36,7 +54,7 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 12px); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -56,7 +74,27 @@ img { max-width: 100%; height: auto; display: block; }
 [hidden] { display: none !important; }
 a { color: var(--royal); }
 a:hover { color: var(--royal-dark); }
-:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; border-radius: 4px; }
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--focus-gap);
+  border-radius: 4px;
+}
+/* Dark blue areas get a white ring with a navy gap; white pop-ups inside them switch back. */
+.site-header,
+.site-footer,
+.section-navy,
+.hero,
+.page-banner,
+.message-bar {
+  --focus: var(--white);
+  --focus-gap: var(--navy);
+}
+.dropdown-panel,
+.product-choice {
+  --focus: var(--navy);
+  --focus-gap: var(--white);
+}
 
 h1, h2, h3 { line-height: 1.15; margin: 0 0 0.5em; text-wrap: balance; }
 h1, h2 { font-family: var(--font-display); font-weight: 400; letter-spacing: 0.01em; }
@@ -105,7 +143,7 @@ p { margin: 0 0 1em; text-wrap: pretty; }
 .section-navy .section-head p { color: var(--sky-soft); }
 .eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
-  font: 800 0.8rem/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--red);
+  font: 800 0.8rem/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--red-text);
   margin-bottom: 10px;
 }
 .eyebrow::before { content: ''; width: 22px; height: 3px; background: var(--red); border-radius: 2px; }
