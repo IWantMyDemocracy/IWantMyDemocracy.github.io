@@ -1,0 +1,13 @@
+{
+  "name": "I Want My Democracy",
+  "short_name": "Democracy",
+  "description": "Original pro-democracy designs on T-shirts, hoodies, mugs, stickers and more.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0b1f4d",
+  "theme_color": "#0b1f4d",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

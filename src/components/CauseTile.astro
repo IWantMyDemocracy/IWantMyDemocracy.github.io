@@ -13,7 +13,7 @@ const { cause, count, fallbackImage } = Astro.props;
 const image = cause.cover ?? fallbackImage;
 ---
 
-<a class="cause-tile" href={`/causes/${cause.id}`}>
+<a class="cause-tile" href={`/causes/${cause.id}/`}>
   <div class="cause-image">
     {
       image && (

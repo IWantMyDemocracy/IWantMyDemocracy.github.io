@@ -38,7 +38,7 @@ const causes = (await getCauses()).filter((c) => designsInCause(designs, c).leng
 
       <p class="count" role="status" aria-live="polite" data-count>{designs.length} designs</p>
       <div class="design-grid" data-grid>
-        {designs.map((d, i) => <DesignCard design={d} eager={i < 4} />)}
+        {designs.map((d, i) => <DesignCard design={d} eager={i < 4} headingLevel={2} />)}
       </div>
       <p class="empty" hidden data-empty>No designs match. Try a different word or cause.</p>
     </div>
@@ -101,7 +101,7 @@ const causes = (await getCauses()).filter((c) => designsInCause(designs, c).leng
     max-width: 460px;
     padding: 0 16px;
     background: var(--white);
-    border: 2px solid var(--tint-2);
+    border: 2px solid var(--line-strong);
     border-radius: 999px;
     color: var(--ink-soft);
   }

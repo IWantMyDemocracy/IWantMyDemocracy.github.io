@@ -21,9 +21,31 @@ const causeTiles = causes
 const featured = designs.filter((d) => d.featured);
 const spotlightCount = Math.ceil(Math.max(8, featured.length) / 4) * 4;
 const spotlight = [...featured, ...designs.filter((d) => !d.featured)].slice(0, spotlightCount);
+
+// Tells search engines who runs the site and where else to find it.
+const siteUrl = new URL('/', Astro.site).toString();
+const organizationLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'I Want My Democracy',
+  url: siteUrl,
+  logo: new URL('/icon-512.png', Astro.site).toString(),
+  ...(settings.email ? { email: settings.email } : {}),
+  sameAs: [
+    settings.teepublicStore,
+    settings.redbubbleStore,
+    settings.facebook,
+    settings.instagram,
+    settings.threads,
+    settings.x,
+    settings.bluesky,
+    settings.tiktok,
+  ].filter(Boolean),
+};
+const websiteLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'I Want My Democracy', url: siteUrl };
 ---
 
-<Base home>
+<Base home jsonLd={[organizationLd, websiteLd]}>
   <Hero />
 
   <section class="section section-white" id="causes">
@@ -34,7 +56,7 @@ const spotlight = [...featured, ...designs.filter((d) => !d.featured)].slice(0, 
           <h2>Shop by Cause</h2>
           <p>Every design is grouped by what it stands for. Pick a cause to see them all.</p>
         </div>
-        <a class="link-arrow" href="/designs">See all {designs.length} designs</a>
+        <a class="link-arrow" href="/designs/">See all {designs.length} designs</a>
       </div>
       <div class="cause-grid">
         {causeTiles.map((t) => <CauseTile cause={t.cause} count={t.count} fallbackImage={t.image} />)}
@@ -50,7 +72,7 @@ const spotlight = [...featured, ...designs.filter((d) => !d.featured)].slice(0, 
           <h2>Featured Designs</h2>
           <p>Available on T-shirts, hoodies, hats, mugs, stickers and more.</p>
         </div>
-        <a class="link-arrow" href="/designs">Browse all designs</a>
+        <a class="link-arrow" href="/designs/">Browse all designs</a>
       </div>
       <div class="design-grid">
         {spotlight.map((d, i) => <DesignCard design={d} eager={i < 4} />)}
@@ -78,7 +100,7 @@ const spotlight = [...featured, ...designs.filter((d) => !d.featured)].slice(0, 
         <span class="eyebrow">Who we are</span>
         <h2>Designs for democracy</h2>
         <p>{settings.aboutShort}</p>
-        <a class="btn" href="/about">More about us</a>
+        <a class="btn" href="/about/">More about us</a>
       </div>
     </div>
   </section>

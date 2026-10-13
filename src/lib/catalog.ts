@@ -1,6 +1,6 @@
 import { getCollection } from 'astro:content';
 import type { ImageMetadata } from 'astro';
-import settings from '../data/settings.json';
+import { settings } from './settings';
 import donkey from '../assets/brand/donkey.png';
 
 // Every picture in src/assets/designs, keyed by file name. The editor may store a picture
@@ -143,7 +143,7 @@ export function storeLinks(d: Design, colorway?: Colorway) {
 
 /** Accepts "https://name.redbubble.com" or "https://www.redbubble.com/people/name/..." */
 function redbubbleUser(): string {
-  const url = settings.redbubbleStore?.trim();
+  const url = settings.redbubbleStore;
   if (!url) return '';
   try {
     const u = new URL(url);

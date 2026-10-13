@@ -9,16 +9,35 @@ interface Props {
   description?: string;
   /** Absolute or root-relative URL of the social preview picture (1200×630). */
   ogImage?: string;
+  /** Words describing the preview picture, for people using screen readers. */
+  ogImageAlt?: string;
   /** On the home page the small menu logo appears only after scrolling past the big one. */
   home?: boolean;
+  /** Keep this page out of search results (the "Page not found" page). */
+  noindex?: boolean;
+  /** Structured data (schema.org) for search engines, one object per entry. */
+  jsonLd?: Record<string, unknown>[];
 }
 
 const siteName = 'I Want My Democracy';
-const { title, description = settings.tagline, ogImage = '/og/default.png', home = false } = Astro.props;
+const {
+  title,
+  description = settings.tagline,
+  ogImage = '/og/default.jpg',
+  ogImageAlt = 'The I Want My Democracy logo and the blue donkey mascot on a starry blue background',
+  home = false,
+  noindex = false,
+  jsonLd = [],
+} = Astro.props;
 const fullTitle = title ? `${title} | ${siteName}` : `${siteName} | Pro-Democracy T-Shirts, Mugs, Stickers & More`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogUrl = new URL(ogImage, Astro.site);
 const causes = await getCauses();
+
+// The message bar can switch itself off after a date ("Hide message bar after" in Settings).
+// It is left out of pages built after that date, and a small script hides it on pages built before.
+const today = new Date().toISOString().slice(0, 10);
+const showMessage = Boolean(settings.messageBar) && !(settings.messageBarUntil && today > settings.messageBarUntil);
 ---
 
 <!doctype html>
@@ -28,33 +47,42 @@ const causes = await getCauses();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="theme-color" content="#0b1f4d" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:title" content={title ?? siteName} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title ?? siteName} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+    {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
   </head>
   <body class:list={{ 'is-home': home }}>
     <a class="skip-link" href="#main">Skip to content</a>
     {
-      settings.messageBar && (
-        <div class="message-bar" role="note">
+      showMessage && (
+        <div class="message-bar" role="note" data-message-until={settings.messageBarUntil || undefined}>
           <div class="container">
-            <span class="message-star" aria-hidden="true">★</span>
+            <span class="message-star" aria-hidden="true">
+              ★
+            </span>
             {settings.messageBar}
-            <span class="message-star" aria-hidden="true">★</span>
+            <span class="message-star" aria-hidden="true">
+              ★
+            </span>
           </div>
         </div>
       )
@@ -66,6 +94,17 @@ const causes = await getCauses();
     <Footer />
   </body>
 </html>
+
+<script>
+  // Hide the message bar once its "until" day has passed (the visitor's own calendar day).
+  const bar = document.querySelector<HTMLElement>('[data-message-until]');
+  if (bar) {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    if (today > (bar.dataset.messageUntil ?? '9999-12-31')) bar.hidden = true;
+  }
+</script>
 
 <style>
   .message-bar {

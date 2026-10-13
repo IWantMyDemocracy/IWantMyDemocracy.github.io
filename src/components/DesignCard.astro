@@ -7,10 +7,13 @@ interface Props {
   design: Design;
   /** Load the picture right away (for cards near the top of the page). */
   eager?: boolean;
+  /** Heading level of the card title: 2 when the cards sit right under the page title, 3 under a section heading. */
+  headingLevel?: 2 | 3;
 }
-const { design, eager = false } = Astro.props;
+const { design, eager = false, headingLevel = 3 } = Astro.props;
 const links = storeLinks(design);
-const href = `/designs/${design.id}`;
+const href = `/designs/${design.id}/`;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
 ---
 
 <article
@@ -34,7 +37,7 @@ const href = `/designs/${design.id}`;
     {design.colorways.length > 1 && <span class="badge-colors">{design.colorways.length} colors</span>}
   </a>
   <div class="card-body">
-    <h3 class="card-title"><a href={href}>{design.title}</a></h3>
+    <Heading class="card-title"><a href={href}>{design.title}</a></Heading>
     {
       (links.teepublic || links.redbubble) && (
         <div class="card-actions">
@@ -124,8 +127,10 @@ const href = `/designs/${design.id}`;
     border-top: 3px solid var(--tint-2);
   }
   .card-title {
+    font-family: var(--font-body);
     font-size: 1rem;
     font-weight: 800;
+    letter-spacing: normal;
     margin: 0;
     line-height: 1.3;
   }

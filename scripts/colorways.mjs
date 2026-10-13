@@ -4,7 +4,13 @@
 // (October 2026). A colour only gets a store link when that store sells that exact colour, and
 // only colours sold in at least one store are included. The design's main store links and its
 // "Comes in N colors" sentence are kept in step with the first colour and the colour count.
-// Usage: FAUBER_DESIGN_DIR=<Fauber Design folder> node scripts/seed/colorways.mjs
+//
+// CAUTION: running this replaces the colour list, main store links and description of every
+// design listed below, including any changes made to them in the online editor since. For
+// day-to-day colour changes use the editor instead; pull first (`git pull`) and check the diff
+// before committing if you do run it.
+//
+// Usage: FAUBER_DESIGN_DIR=<Fauber Design folder> node scripts/colorways.mjs
 import sharp from 'sharp';
 import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -14,7 +20,7 @@ import path from 'node:path';
 const SOURCE_ROOT = process.env.FAUBER_DESIGN_DIR ?? '';
 if (!SOURCE_ROOT) throw new Error('Set FAUBER_DESIGN_DIR to the Fauber Design folder first.');
 
-const root = fileURLToPath(new URL('../../', import.meta.url));
+const root = fileURLToPath(new URL('../', import.meta.url));
 const rb = (id) => (id ? `https://www.redbubble.com/shop/ap/${id}` : '');
 const tp = (idSlug) => (idSlug ? `https://www.teepublic.com/t-shirt/${idSlug}` : '');
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');

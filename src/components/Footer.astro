@@ -32,7 +32,7 @@ const year = new Date().getFullYear();
           <ul class="socials" aria-label="Follow us">
             {socials.map(([icon, name, url]) => (
               <li>
-                <a href={url} target="_blank" rel="noopener" aria-label={name}>
+                <a href={url} target="_blank" rel="noopener" aria-label={`${name} (opens in new tab)`}>
                   <Icon name={icon} />
                 </a>
               </li>
@@ -48,18 +48,22 @@ const year = new Date().getFullYear();
         {
           settings.teepublicStore && (
             <li>
-              <a href={teepublicShopUrl()} target="_blank" rel="noopener">Our TeePublic store</a>
+              <a href={teepublicShopUrl()} target="_blank" rel="noopener">
+                Our TeePublic store<span class="visually-hidden"> (opens in new tab)</span>
+              </a>
             </li>
           )
         }
         {
           settings.redbubbleStore && (
             <li>
-              <a href={redbubbleShopUrl()} target="_blank" rel="noopener">Our Redbubble store</a>
+              <a href={redbubbleShopUrl()} target="_blank" rel="noopener">
+                Our Redbubble store<span class="visually-hidden"> (opens in new tab)</span>
+              </a>
             </li>
           )
         }
-        <li><a href="/designs">All designs</a></li>
+        <li><a href="/designs/">All designs</a></li>
         <li><a href="/#products">Shop by product</a></li>
       </ul>
     </div>
@@ -67,7 +71,7 @@ const year = new Date().getFullYear();
     <div>
       <h2 class="footer-title">Causes</h2>
       <ul class="footer-links">
-        {causes.map((c) => <li><a href={`/causes/${c.id}`}>{c.name}</a></li>)}
+        {causes.map((c) => <li><a href={`/causes/${c.id}/`}>{c.name}</a></li>)}
       </ul>
     </div>
 
@@ -75,7 +79,7 @@ const year = new Date().getFullYear();
       <h2 class="footer-title">Say hello</h2>
       <p class="footer-note">Questions, ideas for a new design, or just want to say hi?</p>
       <EmailButton variant="outline" />
-      <p class="footer-note"><a href="/about">About us</a></p>
+      <p class="footer-note"><a href="/about/">About us</a></p>
     </div>
   </div>
   <div class="footer-bottom">

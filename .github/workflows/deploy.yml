@@ -36,6 +36,9 @@ jobs:
           key: astro-images-${{ hashFiles('src/assets/**') }}
           restore-keys: astro-images-
 
+      # Catch code mistakes before publishing (a failed check keeps the last good site live).
+      - run: npm run check
+
       - run: npm run build
 
       - uses: actions/upload-pages-artifact@v5
